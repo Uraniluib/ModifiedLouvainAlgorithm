@@ -6,6 +6,7 @@ Created on Thu Jun 21 01:20:50 2018
 """
 
 import ClassFile.py
+import Modification.py
 
 """
     Given a graph, a community structure and a vertex ID, this method

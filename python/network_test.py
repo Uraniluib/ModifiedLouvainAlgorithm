@@ -10,10 +10,9 @@ import igraph
 import numpy
 import time
 import sys
-import os
-import jpype
-from jpype import JavaException
+import Modification.py
 
+# arguments: python network_test.py ../data/118busnode.csv ../data/118busbranch.csv ../data/118busQ.csv
 
 # create graph for the network
 networkGraph=igraph.Graph() 
@@ -78,16 +77,15 @@ for x in range(0,rowN):
 fSVQ.close()
 '''
 # using Louvain
-start_time = time.time()
+
 clusters=networkGraph.community_multilevel()
 mod=networkGraph.modularity(clusters)
 
 #louvain.louvain(graph9bus,SVQ)
-newmod=modification.modification(mod,networkGraph,SVQ,clusters)
+'''
+
+start_time = time.time()
 
 end_time = time.time()
 print 'Degree distribution: ',networkGraph.degree_distribution()
 print 'Running time: ',(end_time - start_time)
-print 'New mod: ',newmod
-'''
-
