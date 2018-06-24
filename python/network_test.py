@@ -10,9 +10,12 @@ import igraph
 import numpy
 import time
 import sys
-import Modification.py
+import Modification
 
 # arguments: python network_test.py ../data/118busnode.csv ../data/118busbranch.csv ../data/118busQ.csv
+
+print "Input Original File..."
+print "Use these information to create a graph..."
 
 # create graph for the network
 networkGraph=igraph.Graph() 
@@ -44,11 +47,13 @@ for i in range(nodeNumber):
 SVQ=-numpy.linalg.pinv(Bmatrix)
 #SVQ=-Bmatrix
 
+print "Output Information..."
+
 with open(str(sys.argv[3]),'rb') as csvfileQ:
     csvreaderQ=csv.reader(csvfileQ)
     mycsvQ=list(csvreaderQ)
-    fQs = open('Qsupply.txt','w')
-    fQd = open('Qdemand.txt','w')
+    fQs = open('../data/Qsupply.txt','w')
+    fQd = open('../data/Qdemand.txt','w')
     for row in mycsvQ:
         networkGraph.vs.select(int(row[0])-1)["Qsupply"]=float(row[1])
         networkGraph.vs.select(int(row[0])-1)["Qdemand"]=float(row[2])
@@ -57,7 +62,7 @@ with open(str(sys.argv[3]),'rb') as csvfileQ:
     fQs.close()
     fQd.close()
     
-fNI = open('networkInfo.txt','w')
+fNI = open('../data/networkInfo.txt','w')
 es =  igraph.EdgeSeq(networkGraph)
 for edge in es:
     print edge.tuple
@@ -66,7 +71,7 @@ for edge in es:
     fNI.write('\n')
 fNI.close()
 
-fSVQ = open('SVQ.txt','w')
+fSVQ = open('../data/SVQ.txt','w')
 rowN, colN =  SVQ.shape
 #print str(rowN)+' '+str(colN)
 for x in range(0,rowN):
@@ -75,15 +80,11 @@ for x in range(0,rowN):
     fSVQ.write('\n')
     
 fSVQ.close()
-'''
-# using Louvain
 
-clusters=networkGraph.community_multilevel()
-mod=networkGraph.modularity(clusters)
 
-#louvain.louvain(graph9bus,SVQ)
-'''
 
+
+print "Begin
 start_time = time.time()
 
 end_time = time.time()
