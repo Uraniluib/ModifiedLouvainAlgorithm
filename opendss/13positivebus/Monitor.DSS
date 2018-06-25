@@ -1,0 +1,2 @@
+New "Monitor.substation_power" element=transformer.sub terminal=1 mode=1 PPolar=no
+New "Monitor.substation_voltage" element=transformer.sub terminal=1 mode=0

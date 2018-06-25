@@ -1,0 +1,6 @@
+
+GENERATOR ENERGY METER VALUES
+
+Generator          kWh        kvarh      Max kW     Max kVA    Hours      $          
+
+test                 0          0          0          0          0          0 
