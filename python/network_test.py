@@ -10,7 +10,8 @@ import igraph
 import numpy
 import time
 import sys
-import Modification
+import Louvain
+#import Test
 
 # arguments: python network_test.py ../data/118busnode.csv ../data/118busbranch.csv ../data/118busQ.csv
 
@@ -20,7 +21,7 @@ print "Use these information to create a graph..."
 # create graph for the network
 networkGraph=igraph.Graph() 
 
-with open(str(sys.argv[1]),'rb') as csvfileNode:
+with open(str('../data/9busnode.csv'),'rb') as csvfileNode:
     csvreaderNode=csv.reader(csvfileNode)
     mycsvNode=list(csvreaderNode)
     for row in mycsvNode:
@@ -30,7 +31,7 @@ nodeNumber=networkGraph.vcount()
 Bmatrix=numpy.zeros((nodeNumber,nodeNumber))
 SVQ=numpy.zeros((nodeNumber,nodeNumber))
 
-with open(str(sys.argv[2]),'rb') as csvfileBranch:
+with open(str('../data/9busbranch.csv'),'rb') as csvfileBranch:
     csvreaderBranch=csv.reader(csvfileBranch)
     mycsvBranch=list(csvreaderBranch)
     for row in mycsvBranch:
@@ -49,7 +50,7 @@ SVQ=-numpy.linalg.pinv(Bmatrix)
 
 print "Output Information..."
 
-with open(str(sys.argv[3]),'rb') as csvfileQ:
+with open(str('../data/9busQ.csv'),'rb') as csvfileQ:
     csvreaderQ=csv.reader(csvfileQ)
     mycsvQ=list(csvreaderQ)
     fQs = open('../data/Qsupply.txt','w')
@@ -65,7 +66,7 @@ with open(str(sys.argv[3]),'rb') as csvfileQ:
 fNI = open('../data/networkInfo.txt','w')
 es =  igraph.EdgeSeq(networkGraph)
 for edge in es:
-    print edge.tuple
+    #print edge.tuple
     fNI.write(str(edge.tuple[0])+'\t')
     fNI.write(str(edge.tuple[1]))
     fNI.write('\n')
@@ -81,12 +82,16 @@ for x in range(0,rowN):
     
 fSVQ.close()
 
+result = networkGraph.community_multilevel()
 
 
 
-print "Begin
+print "========Begin========"
 start_time = time.time()
-
+#result = Louvain.community_multilevel(networkGraph, SVQ)
+#print Test.test()
+#print Test.rand()
 end_time = time.time()
-print 'Degree distribution: ',networkGraph.degree_distribution()
+#print result
+#print 'Degree distribution: ',networkGraph.degree_distribution()
 print 'Running time: ',(end_time - start_time)
