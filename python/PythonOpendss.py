@@ -2,12 +2,13 @@
 """
 Created on Thu Jun 21 20:51:01 2018
 
-@author: lusha
+@author: Lusha
 """
 
 import OutputFromOpendss
 #import matplotlib.pyplot as pyplot
 import win32com.client
+import louvain.Louvain
 
 # call OpenDSS
 dssObj = win32com.client.Dispatch("OpenDSSEngine.DSS")
@@ -16,7 +17,7 @@ dssCircuit = dssObj.ActiveCircuit
 dssSolution = dssCircuit.Solution
 dssElem = dssCircuit.ActiveCktElement
 dssBus = dssCircuit.ActiveBus
-dssText.Command = "compile 'Master.dss'"
+dssText.Command = "compile '../opendss/13positivebus/Master.dss'"
 
 # retrieve output of openDSS and plot voltage
 voltageList = OutputFromOpendss.getVoltageProfile()

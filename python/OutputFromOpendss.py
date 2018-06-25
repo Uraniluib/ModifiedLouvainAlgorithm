@@ -2,7 +2,7 @@
 """
 Created on Sat Jun 23 14:16:10 2018
 
-@author: user
+@author: Lusha
 """
 
 import csv
