@@ -6,21 +6,27 @@ Created on Thu Jun 21 20:51:01 2018
 """
 
 import OutputFromOpendss
-#import matplotlib.pyplot as pyplot
 import win32com.client
-import louvain.Louvain
 
-# call OpenDSS
+OpendssFile = '../opendss/13positivebus/Master.dss'
+LineFile = '../opendss/13positivebus/Line.dss'
+TransformerFile = '../opendss/13positivebus/Transformer.dss'
+VoltageFile = 'ieee13nodeckt_EXP_VOLTAGES.CSV'
+YmatrixFile = 'ieee13nodeckt_EXP_Y.CSV'
+
+'''call OpenDSS'''
 dssObj = win32com.client.Dispatch("OpenDSSEngine.DSS")
 dssText = dssObj.Text
 dssCircuit = dssObj.ActiveCircuit
 dssSolution = dssCircuit.Solution
 dssElem = dssCircuit.ActiveCktElement
 dssBus = dssCircuit.ActiveBus
-dssText.Command = "compile '../opendss/13positivebus/Master.dss'"
+dssText.Command = "compile "+ OpendssFile
 
-# retrieve output of openDSS and plot voltage
-voltageList = OutputFromOpendss.getVoltageProfile()
+'''retrieve output of openDSS and plot voltage'''
+networkGraph = OutputFromOpendss.getGraphInfo(LineFile,TransformerFile)
+Ymatrix = OutputFromOpendss.getYmatrix(YmatrixFile)
+voltageList = OutputFromOpendss.getVoltageProfile(VoltageFile)
 OutputFromOpendss.plotVoltageProfile(voltageList)
 
 # chech voltage
