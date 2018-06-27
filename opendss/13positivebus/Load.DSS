@@ -1,13 +1,13 @@
-New "Load.671" bus1=671 model=1 daily=Shape1 phases=1 conn=wye kV=2.4018 kW=385 kvar=220
+New "Load.671" bus1=671 model=1 daily=Shape1 phases=1 conn=wye kV=2.4018 kW=38 kvar=22
 New "Load.634" bus1=634 model=1 daily=Shape1 phases=1 conn=wye kV=0.277 kW=53.333 kvar=36.667
 New "Load.645" bus1=645 model=1 daily=Shape1 phases=1 conn=wye kV=2.4 kW=56.667 kvar=41.667
 New "Load.632" bus1=632 model=1 daily=Shape1 phases=1 conn=wye kV=2.4 kW=56.667 kvar=41.667
 New "Load.633" bus1=633 model=1 daily=Shape1 phases=1 conn=wye kV=2.4 kW=56.667 kvar=41.667
 New "Load.646" bus1=646 model=1 daily=Shape1 phases=1 conn=wye kV=2.4018 kW=76.667 kvar=44
 New "Load.692" bus1=692 model=1 daily=Shape1 phases=1 conn=wye kV=2.4018 kW=56.667 kvar=50.333
-New "Load.675" bus1=675 model=1 daily=Shape1 phases=1 conn=wye kV=2.4 kW=161.67 kvar=63.333
+New "Load.675" bus1=675 model=1 daily=Shape1 phases=1 conn=wye kV=2.4 kW=16.167 kvar=6.3333
 New "Load.611" bus1=611 model=1 daily=Shape1 phases=1 conn=wye kV=2.4 kW=56.667 kvar=26.667
 New "Load.652" bus1=652 model=1 daily=Shape1 phases=1 conn=wye kV=2.4 kW=42.667 kvar=28.667
 New "Load.670" bus1=670 model=1 daily=Shape1 phases=1 conn=wye kV=2.4 kW=5.6667 kvar=3.3333
-New "Load.684" bus1=684 model=1 daily=Shape1 phases=1 conn=wye kV=2.4018 kW=385 kvar=220
-New "Load.680" bus1=680 model=1 daily=Shape1 phases=1 conn=wye kV=2.4018 kW=385 kvar=220
+New "Load.684" bus1=684 model=1 daily=Shape1 phases=1 conn=wye kV=2.4018 kW=3.85 kvar=2.20
+New "Load.680" bus1=680 model=1 daily=Shape1 phases=1 conn=wye kV=2.4018 kW=3.85 kvar=2.20

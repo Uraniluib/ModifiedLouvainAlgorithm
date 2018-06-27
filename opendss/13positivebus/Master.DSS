@@ -28,11 +28,8 @@ calcv
 solve
 
 Export Y
-Show Voltage LN Nodes
-Show Powers kva Elements
+!Show Voltage LN Nodes
+!Show Powers kva Elements
 Export Voltages
 Export Elempowers
 Plot Profile Phases=All
-
-
-
