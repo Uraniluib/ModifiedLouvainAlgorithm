@@ -37,20 +37,20 @@ def louvain(graph, SVQ):
         is_update = False
         better_membership = membership.copy()
         better_modularity = igraph.Graph.modularity(graph, membership)
+        random_order_copy = list(random_order.copy())
         #move_i = False
         #while enum_time < len(set(membership)):
-        for node in random_order:
+        for node in random_order_copy:
             #enum_time = 0
             origial_node_cluster = membership[node]  #get the original cluster number
             original_clusters = list(set(membership))
             original_clusters.remove(origial_node_cluster)
-            
+            subcluster = numpy.where(numpy.array(membership) == origial_node_cluster)[0]
             
             # add this node to the other cluster
             for new_node_cluster in original_clusters:
                 temp_membership = membership.copy()
                 # move i to another cluster
-                subcluster = numpy.where(numpy.array(membership) == origial_node_cluster)[0]
                 #temp_membership[origial_node_cluster] = new_node_cluster
                 for sc in subcluster:
                     temp_membership[sc] = new_node_cluster
@@ -62,7 +62,11 @@ def louvain(graph, SVQ):
                     better_modularity = igraph.Graph.modularity(graph, better_membership)
                 #else:
                     #enum_time += 1
-            
+            #fjowieaf = 0
+            for sc in subcluster:
+                if sc in random_order_copy:
+                    random_order_copy.remove(sc)
+            #fjowieaf = 0
             #after all cluster is tested
             #node = (node + 1) % node_number
             

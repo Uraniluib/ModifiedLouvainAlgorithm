@@ -18,6 +18,8 @@ import Louvain
 print "Input Original File..."
 print "Use these information to create a graph..."
 
+#sys.argv = ["network_test.py", "../../data/118busnode.csv", "../../data/118busbranch.csv", "../../data/118busQ.csv"]
+
 # create graph for the network
 networkGraph=igraph.Graph() 
 
