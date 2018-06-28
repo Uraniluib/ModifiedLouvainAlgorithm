@@ -13,7 +13,7 @@ import sys
 import Louvain
 #import Test
 
-# arguments: python network_test.py ../data/118busnode.csv ../data/118busbranch.csv ../data/118busQ.csv
+# arguments: python network_test.py ../../data/118busnode.csv ../../data/118busbranch.csv ../../data/118busQ.csv
 
 print "Input Original File..."
 print "Use these information to create a graph..."
@@ -21,7 +21,7 @@ print "Use these information to create a graph..."
 # create graph for the network
 networkGraph=igraph.Graph() 
 
-with open(str('../data/9busnode.csv'),'rb') as csvfileNode:
+with open(str(sys.argv[1]),'rb') as csvfileNode:
     csvreaderNode=csv.reader(csvfileNode)
     mycsvNode=list(csvreaderNode)
     for row in mycsvNode:
@@ -31,7 +31,7 @@ nodeNumber=networkGraph.vcount()
 Bmatrix=numpy.zeros((nodeNumber,nodeNumber))
 SVQ=numpy.zeros((nodeNumber,nodeNumber))
 
-with open(str('../data/9busbranch.csv'),'rb') as csvfileBranch:
+with open(str(sys.argv[2]),'rb') as csvfileBranch:
     csvreaderBranch=csv.reader(csvfileBranch)
     mycsvBranch=list(csvreaderBranch)
     for row in mycsvBranch:
@@ -50,11 +50,11 @@ SVQ=-numpy.linalg.pinv(Bmatrix)
 
 print "Output Information..."
 
-with open(str('../data/9busQ.csv'),'rb') as csvfileQ:
+with open(str(sys.argv[3]),'rb') as csvfileQ:
     csvreaderQ=csv.reader(csvfileQ)
     mycsvQ=list(csvreaderQ)
-    fQs = open('../data/Qsupply.txt','w')
-    fQd = open('../data/Qdemand.txt','w')
+    fQs = open('../../data/Qsupply.txt','w')
+    fQd = open('../../data/Qdemand.txt','w')
     for row in mycsvQ:
         networkGraph.vs.select(int(row[0])-1)["Qsupply"]=float(row[1])
         networkGraph.vs.select(int(row[0])-1)["Qdemand"]=float(row[2])
@@ -63,7 +63,7 @@ with open(str('../data/9busQ.csv'),'rb') as csvfileQ:
     fQs.close()
     fQd.close()
     
-fNI = open('../data/networkInfo.txt','w')
+fNI = open('../../data/networkInfo.txt','w')
 es =  igraph.EdgeSeq(networkGraph)
 for edge in es:
     #print edge.tuple
@@ -72,7 +72,7 @@ for edge in es:
     fNI.write('\n')
 fNI.close()
 
-fSVQ = open('../data/SVQ.txt','w')
+fSVQ = open('../../data/SVQ.txt','w')
 rowN, colN =  SVQ.shape
 #print str(rowN)+' '+str(colN)
 for x in range(0,rowN):
@@ -82,16 +82,44 @@ for x in range(0,rowN):
     
 fSVQ.close()
 
-result = networkGraph.community_multilevel()
+#random_order = numpy.arange(0,9,1)
+#random.shuffle(random_order)
+#print random_order
+#result = Louvain.community_multilevel1(networkGraph, SVQ)
+
+#result = networkGraph.community_multilevel()
 
 
+#networkGraphCopy = Louvain.python_community_multilevel(networkGraph,SVQ,None,False)
+#node_weight = networkGraph.vs.degree()
+#clusters = numpy.arange(0,9,1)
+#cluster_weight = numpy.zeros(len(set(clusters)))
+#for i in range(0,len(clusters)):
+    #cluster_weight[clusters[i]] += node_weight[i]
+#print cluster_weight
+#print node_weight
+#cl = igraph.Clustering([0,0,0,0,1,1,1,2,2])
+#membership = [0,0,0,1,1,1,2,2,2]
+#print igraph.Graph.modularity(networkGraph, membership)
+#print networkGraph.clusters().modularity
+#print igraph.Clustering(numpy.arange(0,9,1))
+#original_clusters = numpy.arange(0,len(membership),1)
+#original_clusters = numpy.delete(original_clusters,2)
+#print numpy.delete(original_clusters,2)
+#print numpy.where(numpy.array(membership) == 1)[0]
 
 print "========Begin========"
+times = 10
+
 start_time = time.time()
-#result = Louvain.community_multilevel(networkGraph, SVQ)
-#print Test.test()
-#print Test.rand()
+
+for i in range(0,times):
+    membership = Louvain.louvain(networkGraph, SVQ)
+    clustering = igraph.Clustering(membership)
+    print 'Modularity: ', igraph.Graph.modularity(networkGraph, membership)
+    #print clustering
+
 end_time = time.time()
 #print result
 #print 'Degree distribution: ',networkGraph.degree_distribution()
-print 'Running time: ',(end_time - start_time)
+print 'Running time: ',(end_time - start_time)/times
