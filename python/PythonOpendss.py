@@ -29,11 +29,11 @@ dssText.Command = "compile "+ OpendssFile
 
 
 '''get igraph'''
-networkGraph = OutputFromOpendss.getGraphInfo(LineFile,TransformerFile)
+[networkGraph, nodeOrder] = OutputFromOpendss.getGraphInfo(LineFile, TransformerFile)
 '''Y matrix'''
-[nodesOrder, YGmatrix, YBmatrix] = OutputFromOpendss.getYmatrix(YmatrixFile,networkGraph)
+[YGmatrix, YBmatrix] = OutputFromOpendss.getYmatrix(YmatrixFile, nodeOrder)
 '''set voltage info in graph'''
-networkGraph = OutputFromOpendss.getVoltageProfile(VoltageFile,networkGraph)
+networkGraph = OutputFromOpendss.getVoltageProfile(VoltageFile, networkGraph)
 '''check and plot original voltage profile'''
 [voltageIssueFlag, nodesWithIssue] = OutputFromOpendss.checkPlotVoltageProfile(networkGraph)
 

@@ -46,29 +46,31 @@ def getGraphInfo(LineFile,TransformerFile):
             networkGraph.add_edge(bus1,bus2)
         
     print networkGraph
+    nodeOrder = []
     for v in networkGraph.vs:
+        nodeOrder.append(v["name"])
         print v.index , v["name"]
-    return networkGraph
+    return networkGraph, nodeOrder
 
-def getYmatrix(YmatrixFile,networkGraph):
-    vs = networkGraph.vs
-    nodesOrder = []
+
+def getYmatrix(YmatrixFile, nodeOrder):
+    nodesOrderInYFile = []
     with open(YmatrixFile,'rb') as csvfileY:
         csvreaderY=csv.reader(csvfileY)
         mycsvY=list(csvreaderY)
         nodeNumber = int(mycsvY[0][0])-1
-        YGmatrixOri = numpy.zeros((nodeNumber,nodeNumber))
-        YBmatrixOri = numpy.zeros((nodeNumber,nodeNumber))
+        YGmatrix = numpy.zeros((nodeNumber,nodeNumber))
+        YBmatrix = numpy.zeros((nodeNumber,nodeNumber))
         
-        '''record original node order'''
+        '''record node order in Y file'''
         for i in range(2,len(mycsvY)):
             row = mycsvY[i]
-            nodesOrder.append(row[0][:-2])
+            nodesOrderInYFile.append(row[0][:-2])
         
         '''find corresponding index order'''
         indexOrder = []
-        for nodeName in nodesOrder:
-            indexOrder.append(vs.find("name" == nodeName).index) #index all 0, how to fix this problem
+        for nodeName in nodesOrderInYFile:
+            indexOrder.append(nodeOrder.index(nodeName.lower())) 
             print nodeName
             print indexOrder
         
@@ -77,17 +79,20 @@ def getYmatrix(YmatrixFile,networkGraph):
             row = mycsvY[i]
             if row[-1] == "" or row[-1] == " ":
                 row.pop()
-            m = 0
+            n = 0
             j = 3
             while j < len(row):
+                left = indexOrder[i-2]
+                right = indexOrder[n]
                 Gvalue = float(''.join((row[j]).split()))
                 Bvalue = float(''.join((row[j+1]).split())[2:])
-                YGmatrixOri[i-1][m] = Gvalue
-                YBmatrixOri[i-1][m] = Bvalue
+                YGmatrix[left][right] = Gvalue
+                YBmatrix[left][right] = Bvalue
                 j = j+2
-                m = m+1
+                n = n+1
+
     
-    return nodesOrder,YGmatrix, YBmatrix
+    return YGmatrix, YBmatrix
                
 
 def getVoltageProfile(VoltageFile,networkGraph):
