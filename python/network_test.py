@@ -116,7 +116,7 @@ times = 10
 start_time = time.time()
 
 for i in range(0,times):
-    membership = Louvain.louvain(networkGraph, SVQ)
+    membership = Louvain.louvain(networkGraph)
     clustering = igraph.Clustering(membership)
     print 'Modularity: ', igraph.Graph.modularity(networkGraph, membership)
     #print clustering

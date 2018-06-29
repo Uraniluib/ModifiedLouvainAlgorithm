@@ -7,14 +7,19 @@ Created on Thu Jun 21 20:51:01 2018
 
 import OutputFromOpendss
 import win32com.client
-#import Louvain.Louvain as LV
-#import VoltageControl
+import time
+import igraph
+import Louvain
+import VoltageControl
 
 OpendssFile = '../opendss/13positivebus/Master.dss'
 LineFile = 'Line.dss'
 TransformerFile = 'Transformer.dss'
 VoltageFile = 'ieee13nodeckt_EXP_VOLTAGES.CSV'
 YmatrixFile = 'ieee13nodeckt_EXP_Y.CSV'
+GenFile = "Generator.dss"
+LoadFile = "Load.dss"
+QsupplyFile = "Qsupply.CSV"
 
 '''call OpenDSS'''
 dssObj = win32com.client.Dispatch("OpenDSSEngine.DSS")
@@ -29,23 +34,47 @@ dssText.Command = "compile "+ OpendssFile
 
 
 '''get igraph'''
-[networkGraph, nodeOrder] = OutputFromOpendss.getGraphInfo(LineFile, TransformerFile)
+[networkGraph, nodeOrder, Vmag, Vang] = OutputFromOpendss.getGraphInfo(LineFile, TransformerFile, GenFile, VoltageFile,LoadFile, QsupplyFile )
 '''Y matrix'''
 [YGmatrix, YBmatrix] = OutputFromOpendss.getYmatrix(YmatrixFile, nodeOrder)
-'''set voltage info in graph'''
-networkGraph = OutputFromOpendss.getVoltageProfile(VoltageFile, networkGraph)
-'''check and plot original voltage profile'''
-[voltageIssueFlag, nodesWithIssue] = OutputFromOpendss.checkPlotVoltageProfile(networkGraph)
+'''SVQ'''
+SVQ = OutputFromOpendss.getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodeOrder)
+
+
 
 '''cluster the network'''
 #clusterResult = LV.community_multilevel(networkGraph)
+print "========Begin========"
+iteration = 10
+
+start_time = time.time()
+
+for i in range(0,iteration):
+    membership = Louvain.louvain(networkGraph,SVQ)
+    clustering = igraph.Clustering(membership)
+    print 'Modularity: ', igraph.Graph.modularity(networkGraph, membership)
+    #print clustering
+
+end_time = time.time()
+#print result
+#print 'Degree distribution: ',networkGraph.degree_distribution()
+print 'Running time: ',(end_time - start_time)/iteration
 
 
+'''check and plot original voltage profile'''
+voltageIssueFlag = VoltageControl.checkVoltage(networkGraph, Vmag, nodeOrder, clustering)
 
 '''voltage control when there is voltage issue'''
 if voltageIssueFlag == True:
-    # control part
-    genName = "Generator.test"
+    
+    # control voltage for every cluster
+    for i in range(0,len(clustering)):
+        oneCluster = clustering[i]
+        nodesWithIssueOneCluster = nodesWithIssue[i]
+        genNodesOneCluster = genNodes[i]
+        calReactivePower(networkGraph, nodesWithIssueOneCluster, genNodesOneCluster, SVQ)
+        
+    genName = "Generator.g1"
     dssCircuit.Generators.Name = genName.split(".")[1]
     oldkvar = dssCircuit.Generators.kvar
     print oldkvar
