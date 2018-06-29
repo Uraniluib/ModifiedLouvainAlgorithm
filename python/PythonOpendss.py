@@ -34,11 +34,11 @@ dssText.Command = "compile "+ OpendssFile
 
 
 '''get igraph'''
-[networkGraph, nodeOrder, Vmag, Vang] = OutputFromOpendss.getGraphInfo(LineFile, TransformerFile, GenFile, VoltageFile,LoadFile, QsupplyFile )
+[networkGraph, nodeListInOrder, Vmag, Vang] = OutputFromOpendss.getGraphInfo(LineFile, TransformerFile, GenFile, VoltageFile, LoadFile, QsupplyFile )
 '''Y matrix'''
-[YGmatrix, YBmatrix] = OutputFromOpendss.getYmatrix(YmatrixFile, nodeOrder)
+[YGmatrix, YBmatrix] = OutputFromOpendss.getYmatrix(YmatrixFile, nodeListInOrder)
 '''SVQ'''
-SVQ = OutputFromOpendss.getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodeOrder)
+SVQ = OutputFromOpendss.getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodeListInOrder)
 
 
 
@@ -62,17 +62,14 @@ print 'Running time: ',(end_time - start_time)/iteration
 
 
 '''check and plot original voltage profile'''
-voltageIssueFlag = VoltageControl.checkVoltage(networkGraph, Vmag, nodeOrder, clustering)
+voltageIssueFlag = VoltageControl.checkVoltage(Vmag, nodeListInOrder)
 
 '''voltage control when there is voltage issue'''
 if voltageIssueFlag == True:
-    
     # control voltage for every cluster
-    for i in range(0,len(clustering)):
-        oneCluster = clustering[i]
-        nodesWithIssueOneCluster = nodesWithIssue[i]
-        genNodesOneCluster = genNodes[i]
-        calReactivePower(networkGraph, nodesWithIssueOneCluster, genNodesOneCluster, SVQ)
+    for oneCluster in clustering:
+        calReactivePower(networkGraph, oneCluster, SVQ)
+
         
     genName = "Generator.g1"
     dssCircuit.Generators.Name = genName.split(".")[1]

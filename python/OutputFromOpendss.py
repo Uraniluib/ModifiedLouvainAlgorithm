@@ -35,11 +35,13 @@ def getGraphInfo(LineFile, TransformerFile, GenFile, VoltageFile, LoadFile, Qsup
 
 def getEdgeInfo(LineFile, TransformerFile, networkGraph):
     verticesList = []
+    
+    '''read line file'''
     f1 = open(LineFile,'r')
     f11 = f1.readlines()
     for x in f11:
-        bus1 = re.findall(r'(?<=bus1\=).+?(?=\ )',x)[0]
-        bus2 = re.findall(r'(?<=bus2\=).+?(?=\ )',x)[0]
+        bus1 = re.findall(r'(?<=bus1=).+?(?= )',x)[0]
+        bus2 = re.findall(r'(?<=bus2=).+?(?= )',x)[0]
         #if bus1 != "sourcebus" and bus2 != "sourcebus":     
         if bus1 not in verticesList:
             networkGraph.add_vertex(name=bus1)
@@ -49,10 +51,11 @@ def getEdgeInfo(LineFile, TransformerFile, networkGraph):
             verticesList.append(bus2)
         networkGraph.add_edge(bus1,bus2)
 
+    '''read transformer file'''
     f2 = open(TransformerFile,'r')
     f22 = f2.readlines()
     for x in f22:
-        buses = re.findall(r'(?<=buses\=\[).+?(?=\ \])',x)[0]
+        buses = re.findall(r'(?<=buses=\[).+?(?=\ \])',x)[0]
         buses = ''.join(buses.split())
         buses = buses.split(",")
         bus1 = buses[0]
@@ -84,8 +87,8 @@ def getVoltageProfile(VoltageFile, networkGraph, nodeListInOrder):
                 nodeIndex = nodeListInOrder.index(row[0])
             vs[nodeIndex]["voltageAngle"] = float(row[4])
             vs[nodeIndex]["voltageMag"] = float(row[5])       
-            Vmag[nodeIndex] = float(row[4])
-            Vang[nodeIndex] = float(row[5])  
+            Vang[nodeIndex] = float(row[4])
+            Vmag[nodeIndex] = float(row[5])  
             '''
             for node in networkGraph.vs:
                 if row[0] == node["name"]:
@@ -101,7 +104,7 @@ def getGenInfo(GenFile, networkGraph, nodeListInOrder):
     f11 = f1.readlines()
     for x in f11:
         if not x.startswith('!') and x != "\n":
-            bus1 = re.findall(r'(?<=bus1\=).+?(?=\ )',x)[0]
+            bus1 = re.findall(r'(?<=bus1=).+?(?=\ )',x)[0]
             genName = re.findall(r'(?<=Generator\.).+?(?=\")',x)[0]
             #if bus1 != "sourcebus":
             nodeIndex = nodeListInOrder.index(bus1)
@@ -115,7 +118,7 @@ def getQdemandInfo(LoadFile, networkGraph, nodeListInOrder):
     f11 = f1.readlines()
     for x in f11:
         if not x.startswith('!'):
-            Qd = re.findall(r'(?<=kvar\=).+?(?=\n)',x)[0]
+            Qd = re.findall(r'(?<=kvar=).+?(?=\n)',x)[0]
             nodeName = re.findall(r'(?<=Load\.).+?(?=\")',x)[0]
             #if bus1 != "sourcebus":
             nodeIndex = nodeListInOrder.index(nodeName)

@@ -34,3 +34,15 @@ def getQbalanceDegree(oneCluster, networkGraph):
     else:
         QbalanceDegree = numpy.absolute(Qs/Qd)
     return QbalanceDegree
+
+def modIndex(networkGraph, clustering, SVQ):
+    totalAVQ = 0
+    totalQbalanceDegree = 0
+    for i in range(0, len(clustering)):
+        oneCluster = clustering[i]
+        avgAVQ = getAvgSensitivity(oneCluster, SVQ)
+        QbalanceDegree = getQbalanceDegree(oneCluster, networkGraph)
+        totalAVQ = totalAVQ +avgAVQ
+        totalQbalanceDegree = totalQbalanceDegree + QbalanceDegree
+    modPart = (totalAVQ + totalQbalanceDegree)/len(clustering)
+    return modPart
