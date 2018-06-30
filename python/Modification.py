@@ -14,7 +14,7 @@ def getAvgSensitivity(oneCluster, SVQ):
         for j in range(i+1, len(oneCluster)):
             indexi =  oneCluster[i]
             indexj = oneCluster[j]
-            Aij = (SVQ[indexi][indexj]+SVQ[j][i])/2
+            Aij = (SVQ[indexi][indexj]+SVQ[indexj][indexi])/2
             sumAVQ = sumAVQ + Aij
             count = count +1
     avgAVQ = sumAVQ/count
