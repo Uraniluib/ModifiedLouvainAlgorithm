@@ -10,14 +10,17 @@ import numpy
 def getAvgSensitivity(oneCluster, SVQ):
     sumAVQ = 0
     count = 0
-    for i in range(0, len(oneCluster)):
-        for j in range(i+1, len(oneCluster)):
-            indexi =  oneCluster[i]
-            indexj = oneCluster[j]
-            Aij = (SVQ[indexi][indexj]+SVQ[indexj][indexi])/2
-            sumAVQ = sumAVQ + Aij
-            count = count +1
-    avgAVQ = sumAVQ/count
+    if len(oneCluster) == 0:
+        for i in range(0, len(oneCluster)):
+            for j in range(i+1, len(oneCluster)):
+                indexi =  oneCluster[i]
+                indexj = oneCluster[j]
+                Aij = (SVQ[indexi][indexj]+SVQ[indexj][indexi])/2
+                sumAVQ = sumAVQ + Aij
+                count = count +1
+        avgAVQ = sumAVQ/count
+    else:
+        avgAVQ = 0
     return avgAVQ
 
 
