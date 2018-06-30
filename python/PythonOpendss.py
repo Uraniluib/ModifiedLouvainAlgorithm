@@ -68,7 +68,7 @@ voltageIssueFlag = VoltageControl.checkVoltage(Vmag, nodeListInOrder)
 if voltageIssueFlag == True:
     # control voltage for every cluster
     for oneCluster in clustering:
-        calReactivePower(networkGraph, oneCluster, SVQ)
+        neededQ = VoltageControl.calReactivePower(networkGraph, oneCluster, SVQ)
 
         
     genName = "Generator.g1"
