@@ -9,8 +9,20 @@ import igraph
 import numpy
 import random
 #import ClassFile
-#import Modification
+import Modification
 
+
+# reset membership
+def resetMembership(membership):
+
+	new_membership = membership.copy()
+	old_membership_list = list(set(membership))
+	for new_clusters in range(0,len(old_membership_list)):
+		sub_old = numpy.where(numpy.array(membership) == old_membership_list[new_clusters])[0]
+		for sc in sub_old:
+			new_membership[sc] = new_clusters  
+				
+	return new_membership
 	
 def louvain(graph, SVQ):
     
@@ -35,8 +47,9 @@ def louvain(graph, SVQ):
         #enum_time = 0 # Enumeration times, to n, represents all points that have been traversed without moving
         node = 0   # which node
         is_update = False
+        membership = resetMembership(membership)
         better_membership = membership.copy()
-        better_modularity = igraph.Graph.modularity(graph, membership)
+        better_modularity = igraph.Graph.modularity(graph, membership) - Modification.modIndex(graph, igraph.Clustering(membership), SVQ)
         random_order_copy = list(random_order.copy())
         #move_i = False
         #while enum_time < len(set(membership)):
@@ -54,12 +67,13 @@ def louvain(graph, SVQ):
                 #temp_membership[origial_node_cluster] = new_node_cluster
                 for sc in subcluster:
                     temp_membership[sc] = new_node_cluster
-                temp_modularity = igraph.Graph.modularity(graph, temp_membership)
+                temp_membership = resetMembership(temp_membership)
+                temp_modularity = igraph.Graph.modularity(graph, temp_membership) - Modification.modIndex(graph, igraph.Clustering(temp_membership), SVQ)
                 if temp_modularity > better_modularity:  #find better clusters
                     #enum_time = 0
                     is_update = True
                     better_membership = temp_membership.copy()
-                    better_modularity = igraph.Graph.modularity(graph, better_membership)
+                    better_modularity = igraph.Graph.modularity(graph, better_membership) - Modification.modIndex(graph, igraph.Clustering(membership), SVQ)
                 #else:
                     #enum_time += 1
             #fjowieaf = 0
@@ -73,16 +87,11 @@ def louvain(graph, SVQ):
         membership = better_membership.copy()
     
     # reset the membership array
-    new_membership = membership.copy()
-    old_membership_list = list(set(membership))
-    for new_clusters in range(0,len(old_membership_list)):
-            sub_old = numpy.where(numpy.array(membership) == old_membership_list[new_clusters])[0]
-            for sc in sub_old:
-                new_membership[sc] = new_clusters        
+    membership = resetMembership(membership)
     
-    return new_membership
+    return membership
     
-	
+
 	
 	
 	
