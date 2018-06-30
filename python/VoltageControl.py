@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Jun 25 13:39:23 2018
-
 @author: Lusha
 """
 import matplotlib.pyplot as plt
 import numpy
-import scipy
+import scipy.optimize as opt
 
 
 def checkVoltage(Vmag, nodeListInOrder):
@@ -27,7 +26,7 @@ def checkVoltage(Vmag, nodeListInOrder):
     return voltageIssueFlag
 
 
-'''
+
 def calReactivePower(networkGraph, oneCluster, SVQ):
     vs = networkGraph.vs
     nodeIndexWithVoltageIssue = []
@@ -37,28 +36,34 @@ def calReactivePower(networkGraph, oneCluster, SVQ):
             nodeIndexWithVoltageIssue.append(nodeIndex)
         if vs[nodeIndex]["type"] == "gen":
             genIndex.append(nodeIndex)
-    issueNum = len(nodeIndexWithVoltageIssue)
     genNum = len(genIndex)
     
     dQ = numpy.zeros(genNum)
-
-
-    cons = cons()
-   # res = minimize(objFun(dQ), method = 'SLSQP', constraints = cons)
+    #conslist = cons(dQ, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ)
+    res = opt.minimize(objFun(dQ), numpy.zeros(genNum), method = 'SLSQP', constraints = cons(dQ, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ))
         
-    return NULL
+    return res
 
 def objFun(dQ):
     return sum(dQ)
 
-def cons():
-    cons = []
-    
-    
-     for i in range(0, issueNum):
+def cons(dQ, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ):
+    vs = networkGraph.vs
+    issueNum = len(nodeIndexWithVoltageIssue)
+    genNum = len(genIndex)
+    conslist = []
+    for i in range(0, issueNum):
+        conU = {}
+        conL = {}
+        dV = 0
         for j in range(0, genNum):
-            
-        Vnew = vs[issueNum[i]]["voltageMag"] - dV
-        conU[i] =  
-
-   '''
+            dV = dV + SVQ[nodeIndexWithVoltageIssue[i]][genIndex[j]]*dQ[j]
+        Vnew = vs[nodeIndexWithVoltageIssue[i]]["voltageMag"] - dV # not sure add or minus
+        conU['type'] = 'ineq'
+        conU['fun'] = 1.05 - Vnew
+        conL['type'] = 'ineq'
+        conL['fun'] = Vnew - 0.95
+        conslist.append(conU)
+        conslist.append(conL)
+        
+    return conslist
