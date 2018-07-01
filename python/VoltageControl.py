@@ -40,7 +40,7 @@ def calReactivePower(networkGraph, oneCluster, SVQ):
     
     dQ = numpy.zeros(genNum)
     #conslist = cons(dQ, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ)
-    res = opt.minimize(objFun(dQ), numpy.zeros(genNum), method = 'SLSQP', constraints = cons(dQ, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ))
+    res = opt.minimize(objFun(dQ), method = 'SLSQP', constraints = cons(dQ, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ))
         
     return res
 

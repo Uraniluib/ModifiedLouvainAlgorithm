@@ -122,10 +122,10 @@ def getQdemandInfo(LoadFile, networkGraph, nodeListInOrder):
             nodeName = re.findall(r'(?<=Load\.).+?(?=\")',x)[0]
             #if bus1 != "sourcebus":
             nodeIndex = nodeListInOrder.index(nodeName)
-            vs[nodeIndex]["Qd"] = Qd
+            vs[nodeIndex]["Qd"] = float(Qd)
     for node in vs:
         if node["Qd"] == None:
-            node["Qd"] = '0'
+            node["Qd"] = 0
     return networkGraph    
 
 def getQsupplyInfo(QsupplyFile, networkGraph, nodeListInOrder):
@@ -138,10 +138,10 @@ def getQsupplyInfo(QsupplyFile, networkGraph, nodeListInOrder):
             nodeName = row[0]
             Qs = row[1]
             nodeIndex = nodeListInOrder.index(nodeName)
-            vs[nodeIndex]["Qs"] = Qs
+            vs[nodeIndex]["Qs"] = float(Qs)
     for node in vs:
         if node["Qs"] == None:
-            node["Qs"] = '0'
+            node["Qs"] = 0
     return networkGraph
 
 def getYmatrix(YmatrixFile, nodeListInOrder):
