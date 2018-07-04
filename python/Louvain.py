@@ -49,7 +49,10 @@ def louvain(graph, SVQ):
         is_update = False
         membership = resetMembership(membership)
         better_membership = membership.copy()
-        better_modularity = igraph.Graph.modularity(graph, membership) - Modification.modIndex(graph, igraph.Clustering(membership), SVQ)
+        if SVQ is None:
+            better_modularity = igraph.Graph.modularity(graph, membership)
+        else:
+            better_modularity = igraph.Graph.modularity(graph, membership) - Modification.modIndex(graph, igraph.Clustering(membership), SVQ)
         random_order_copy = list(random_order.copy())
         #move_i = False
         #while enum_time < len(set(membership)):
@@ -68,12 +71,18 @@ def louvain(graph, SVQ):
                 for sc in subcluster:
                     temp_membership[sc] = new_node_cluster
                 temp_membership = resetMembership(temp_membership)
-                temp_modularity = igraph.Graph.modularity(graph, temp_membership) - Modification.modIndex(graph, igraph.Clustering(temp_membership), SVQ)
+                if SVQ is None:
+                    temp_modularity = igraph.Graph.modularity(graph, temp_membership)
+                else:
+                    temp_modularity = igraph.Graph.modularity(graph, temp_membership) - Modification.modIndex(graph, igraph.Clustering(temp_membership), SVQ)
                 if temp_modularity > better_modularity:  #find better clusters
                     #enum_time = 0
                     is_update = True
                     better_membership = temp_membership.copy()
-                    better_modularity = igraph.Graph.modularity(graph, better_membership) - Modification.modIndex(graph, igraph.Clustering(membership), SVQ)
+                    if SVQ is None:
+                        better_modularity = igraph.Graph.modularity(graph, better_membership)
+                    else:
+                        better_modularity = igraph.Graph.modularity(graph, better_membership) - Modification.modIndex(graph, igraph.Clustering(membership), SVQ)
                 #else:
                     #enum_time += 1
             #fjowieaf = 0

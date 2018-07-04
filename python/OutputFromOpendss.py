@@ -31,7 +31,20 @@ def getGraphInfo(LineFile, TransformerFile, GenFile, VoltageFile, LoadFile, Qsup
     networkGraph = getQdemandInfo(LoadFile, networkGraph, nodeListInOrder)
     networkGraph = getQsupplyInfo(QsupplyFile, networkGraph, nodeListInOrder)    
     
+    '''plot graph'''
+    networkGraph = plotGraph(networkGraph)
+    
     return networkGraph, nodeListInOrder, Vmag, Vang
+
+def plotGraph(networkGraph):
+    vs = networkGraph.vs
+    for v in vs:
+        v["label"] = v.index
+    vs["color"] = ["pink" if (vertex["type"] == "gen")  else "yellow" for vertex in vs]
+    layout = networkGraph.layout("kk")
+    igraph.plot(networkGraph,"13busPlot.png",layout = layout).show()
+    return networkGraph
+
 
 def getEdgeInfo(LineFile, TransformerFile, networkGraph):
     verticesList = []

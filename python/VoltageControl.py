@@ -72,7 +72,7 @@ def con(dQ, networkGraph, nodei, genIndex, SVQ):
     dV = 0
     for j in range(0, genNum):
         dV = dV + SVQ[nodei][genIndex[j]]*dQ[j]
-    Vnew = vs[nodei]["voltageMag"] - dV # not sure add or minus
+    Vnew = vs[nodei]["voltageMag"] + dV # not sure add or minus
     Ufun = 1.05 - Vnew
     Lfun = Vnew - 0.95
         

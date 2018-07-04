@@ -33,9 +33,9 @@ def getQbalanceDegree(oneCluster, networkGraph):
         Qd = Qd + vs[nodeIndex]["Qd"]
         Qs = Qs + vs[nodeIndex]["Qs"]
     if Qs > Qd or Qd == 0:
-        QbalanceDegree = 1
+        QbalanceDegree = 0
     else:
-        QbalanceDegree = numpy.absolute(Qs/Qd)
+        QbalanceDegree = 1 - numpy.absolute(Qs/Qd)
     return QbalanceDegree
 
 def modIndex(networkGraph, clustering, SVQ):
