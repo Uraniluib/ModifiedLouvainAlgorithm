@@ -6,6 +6,38 @@ Created on Fri Jun 29 10:20:46 2018
 """
 
 import numpy
+import math
+
+
+def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
+    nodeNumber = len(nodesOrder)
+    Qcal = numpy.zeros(nodeNumber)
+    JVQ = numpy.zeros((nodeNumber,nodeNumber))
+    for i in range(0,nodeNumber):
+        temp = 0
+        for j in range(0, nodeNumber):
+            if i!=j:
+                Yij = complex(YGmatrix[i][j], YBmatrix[i][j])
+                temp = temp-Vmag[i]*Vmag[j]*numpy.absolute(Yij)*math.sin(numpy.angle(Yij, deg=True)+Vang[j]-Vang[i])
+            else:
+                temp = temp-Vmag[i]*Vmag[i]*YBmatrix[i][i]
+        Qcal[i] = temp
+    
+    for i in range(0, nodeNumber):
+        for j in range(0, nodeNumber):
+            if i != j:
+                Yij = complex(YGmatrix[i][j], YBmatrix[i][j])
+                JVQ[i,j] = -Vmag[i]*Vmag[j]*numpy.absolute(Yij)*math.sin(numpy.angle(Yij, deg=True)+Vang[j]-Vang[i])
+            else:
+                JVQ[i,i] = Qcal[i]-Vmag[i]*Vmag[i]*YBmatrix[i][i]
+    
+    SVQ = numpy.linalg.inv(JVQ)
+    return SVQ
+    
+
+
+    
+    
 
 def getAvgSensitivity(oneCluster, SVQ):
     sumAVQ = 0

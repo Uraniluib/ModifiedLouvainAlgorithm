@@ -5,10 +5,12 @@ Created on Thu Jun 21 20:51:01 2018
 @author: Lusha
 """
 
-import OutputFromOpendss
+
 import win32com.client
 import time
 import igraph
+import OutputFromOpendss
+import Modification
 import Louvain
 import VoltageControl
 
@@ -33,14 +35,26 @@ dssBus = dssCircuit.ActiveBus
 dssText.Command = "compile "+ OpendssFile
 
 
-'''get igraph'''
-[networkGraph, nodeListInOrder, Vmag, Vang] = OutputFromOpendss.getGraphInfo(LineFile, TransformerFile, GenFile, VoltageFile, LoadFile, QsupplyFile )
-'''Y matrix'''
-[YGmatrix, YBmatrix] = OutputFromOpendss.getYmatrix(YmatrixFile, nodeListInOrder)
-'''SVQ'''
-SVQ = OutputFromOpendss.getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodeListInOrder)
+'''node info and Y matrix'''
+[networkGraph, nodesOrder, YGmatrix, YBmatrix] = OutputFromOpendss.getNodeAndYmatrix(YmatrixFile)
+'''edge info'''
+networkGraph = OutputFromOpendss.getEdgeInfo(networkGraph, LineFile, TransformerFile)
+'''generation info'''
+networkGraph = OutputFromOpendss.getGenInfo(networkGraph, GenFile, nodesOrder)
+'''Q denmand info'''
+networkGraph = OutputFromOpendss.getQdemandInfo(networkGraph,LoadFile, nodesOrder)
+'''Q supply info'''
+networkGraph = OutputFromOpendss.getQsupplyInfo(networkGraph, QsupplyFile, nodesOrder)
+'''voltage info'''
+[networkGraph, Vmag, Vang] = OutputFromOpendss.getVoltageProfile(networkGraph, VoltageFile, nodesOrder)
+'''plot graph'''
+networkGraph = OutputFromOpendss.plotGraph(networkGraph)
 
 
+
+
+'''calculate SVQ'''
+SVQ = Modification.getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder)
 
 '''cluster the network'''
 #clusterResult = LV.community_multilevel(networkGraph)
@@ -62,7 +76,7 @@ print 'Running time: ',(end_time - start_time)/iteration
 
 
 '''check and plot original voltage profile'''
-voltageIssueFlag = VoltageControl.checkVoltage(Vmag, nodeListInOrder)
+voltageIssueFlag = VoltageControl.checkVoltage(Vmag, nodesOrder)
 
 '''voltage control when there is voltage issue'''
 if voltageIssueFlag == True:
