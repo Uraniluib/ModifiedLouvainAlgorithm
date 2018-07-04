@@ -8,9 +8,9 @@ import numpy
 import scipy.optimize as opt
 
 
-def checkVoltage(Vmag, nodeListInOrder):
+def checkVoltage(Vmag, nodesOrder):
     voltageIssueFlag = False
-    regIndex = nodeListInOrder.index("rg60")
+    regIndex = nodesOrder.index("RG60")
     x = []
     y = []   
     for i in range(0, len(Vmag)):
@@ -32,7 +32,7 @@ def calReactivePower(networkGraph, oneCluster, SVQ):
     nodeIndexWithVoltageIssue = []
     genIndex = []
     for nodeIndex in oneCluster:
-        if vs[nodeIndex]["voltageMag"] > 1.05:
+        if vs[nodeIndex]["Vmag"] > 1.05:
             nodeIndexWithVoltageIssue.append(nodeIndex)
         if vs[nodeIndex]["type"] == "gen":
             genIndex.append(nodeIndex)
@@ -72,7 +72,7 @@ def con(dQ, networkGraph, nodei, genIndex, SVQ):
     dV = 0
     for j in range(0, genNum):
         dV = dV + SVQ[nodei][genIndex[j]]*dQ[j]
-    Vnew = vs[nodei]["voltageMag"] + dV # not sure add or minus
+    Vnew = vs[nodei]["Vmag"] + dV # not sure add or minus
     Ufun = 1.05 - Vnew
     Lfun = Vnew - 0.95
         
