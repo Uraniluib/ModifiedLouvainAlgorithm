@@ -38,7 +38,7 @@ dssText.Command = "compile "+ OpendssFile
 '''node info and Y matrix'''
 [networkGraph, nodesOrder, YGmatrix, YBmatrix] = OutputFromOpendss.getNodeAndYmatrix(YmatrixFile)
 '''edge info'''
-networkGraph = OutputFromOpendss.getEdgeInfo(networkGraph, LineFile, TransformerFile)
+networkGraph = OutputFromOpendss.getEdgeInfo(networkGraph, nodesOrder, LineFile, TransformerFile)
 '''generation info'''
 networkGraph = OutputFromOpendss.getGenInfo(networkGraph, GenFile, nodesOrder)
 '''Q denmand info'''
@@ -73,6 +73,7 @@ end_time = time.time()
 #print result
 #print 'Degree distribution: ',networkGraph.degree_distribution()
 print 'Running time: ',(end_time - start_time)/iteration
+
 
 
 '''check and plot original voltage profile'''

@@ -10,16 +10,14 @@ import scipy.optimize as opt
 
 def checkVoltage(Vmag, nodesOrder):
     voltageIssueFlag = False
-    regIndex = nodesOrder.index("RG60")
     x = []
     y = []   
     for i in range(0, len(Vmag)):
-        if i != regIndex:
-            x.append(i)
-            y.append(Vmag[i])
-            if Vmag[i] > 1.05:
-                voltageIssueFlag = True
-    plt.ylim(0.99, 1.06)
+        x.append(i)
+        y.append(Vmag[i])
+        if Vmag[i] > 1.05:
+            voltageIssueFlag = True
+    plt.ylim(0.99, 1.1)
     plt.scatter(x,y)
     plt.plot((0,len(y)),(1.05,1.05),'r')
     plt.show()
@@ -72,7 +70,7 @@ def con(dQ, networkGraph, nodei, genIndex, SVQ):
     dV = 0
     for j in range(0, genNum):
         dV = dV + SVQ[nodei][genIndex[j]]*dQ[j]
-    Vnew = vs[nodei]["Vmag"] + dV # not sure add or minus
+    Vnew = vs[nodei]["Vmag"] + dV 
     Ufun = 1.05 - Vnew
     Lfun = Vnew - 0.95
         
