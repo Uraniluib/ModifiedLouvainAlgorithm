@@ -6,6 +6,7 @@ Created on Fri Jun 29 10:20:46 2018
 """
 
 import numpy
+import scipy
 import math
 
 
@@ -14,6 +15,7 @@ def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
     nodeNumber = len(nodesOrder)
     Qcal = numpy.zeros(nodeNumber)
     JVQ = numpy.zeros((nodeNumber,nodeNumber))
+    
     for i in range(0,nodeNumber):
         temp = 0
         for j in range(0, nodeNumber):
@@ -31,9 +33,11 @@ def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
                 JVQ[i,j] = -Vmag[i]*numpy.absolute(Yij)*math.sin(numpy.angle(Yij, deg=True)+Vang[j]-Vang[i])
             else:
                 JVQ[i,i] = Qcal[i]/Vmag[i]-Vmag[i]*YBmatrix[i][i]
+    
+
     SVQ = numpy.linalg.inv(JVQ)
     '''
-    SVQ = numpy.linalg.inv(-YBmatrix) # for estimation. not sure to be true
+    SVQ = scipy.sparse.linalg.inv(-YBmatrix) # for estimation. not sure to be true
     return SVQ
     
 

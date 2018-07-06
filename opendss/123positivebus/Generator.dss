@@ -1,0 +1,5 @@
+!New "Generator.test" bus1=671 daily=loadshape1 model=1 phases=1 conn=wye kv=2.4018 kW=1800 pf=1
+New "Generator.g13" bus1=13 model=1 phases=1 kv=2.4018 kW=500 kvar=0
+New "Generator.g25" bus1=25 model=1 phases=1 kv=2.4018 kW=500 kvar=0
+New "Generator.g105" bus1=105 model=1 phases=1 kv=2.4018 kW=500 kvar=0
+New "Generator.g76" bus1=76 model=1 phases=1 kv=2.4018 kW=500 kvar=0

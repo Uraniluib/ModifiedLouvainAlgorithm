@@ -57,6 +57,10 @@ def getEdgeInfo(networkGraph, nodesOrder, LineFile, TransformerFile):
     for x in f11:
         bus1 = re.findall(r'(?<=bus1=).+?(?= )',x)[0]
         bus2 = re.findall(r'(?<=bus2=).+?(?= )',x)[0]
+        if isinstance(bus1, str):
+            bus1 = bus1.upper()
+        if isinstance(bus2, str):
+            bus2 = bus2.upper()
         if bus1 in nodesOrder and bus2 in nodesOrder:
             networkGraph.add_edge(bus1,bus2)
 
@@ -69,6 +73,10 @@ def getEdgeInfo(networkGraph, nodesOrder, LineFile, TransformerFile):
         buses = buses.split(",")
         bus1 = buses[0]
         bus2 = buses[1]
+        if isinstance(bus1, str):
+            bus1 = bus1.upper()
+        if isinstance(bus2, str):
+            bus2 = bus2.upper()
         if bus1 in nodesOrder and bus2 in nodesOrder:
             networkGraph.add_edge(bus1,bus2)
     return networkGraph    
@@ -76,13 +84,15 @@ def getEdgeInfo(networkGraph, nodesOrder, LineFile, TransformerFile):
 
 
 '''set gen node and name'''
-def getGenInfo(networkGraph, GenFile, nodesOrder):
+def getGenInfo(networkGraph, nodesOrder, GenFile):
     vs = networkGraph.vs
     f1 = open(GenFile,'r')
     f11 = f1.readlines()
     for x in f11:
         if not x.startswith('!') and x != "\n":
             bus1 = re.findall(r'(?<=bus1=).+?(?=\ )',x)[0]
+            if isinstance(bus1, str):
+                bus1 = bus1.upper()
             genName = re.findall(r'(?<=Generator\.).+?(?=\")',x)[0]
             nodeIndex = nodesOrder.index(bus1)
             vs[nodeIndex]["type"] = "gen"
@@ -92,7 +102,7 @@ def getGenInfo(networkGraph, GenFile, nodesOrder):
 
 
 '''set Q demand info'''
-def getQdemandInfo(networkGraph,LoadFile, nodesOrder):
+def getQdemandInfo(networkGraph, nodesOrder, LoadFile):
     vs = networkGraph.vs
     for node in vs:
         node["Qd"] = 0
@@ -104,6 +114,8 @@ def getQdemandInfo(networkGraph,LoadFile, nodesOrder):
         if not x.startswith('!'):
             Qd = re.findall(r'(?<=kvar=).+?(?=\n)',x)[0]
             bus1 = re.findall(r'(?<=bus1=).+?(?=\ )',x)[0]
+            if isinstance(bus1, str):
+                bus1 = bus1.upper()
             nodeIndex = nodesOrder.index(bus1)
             vs[nodeIndex]["Qd"] = vs[nodeIndex]["Qd"] + float(Qd)
     return networkGraph    
@@ -111,7 +123,7 @@ def getQdemandInfo(networkGraph,LoadFile, nodesOrder):
 
 
 '''set Q supply info'''
-def getQsupplyInfo(networkGraph, QsupplyFile, nodesOrder):
+def getQsupplyInfo(networkGraph, nodesOrder, QsupplyFile):
     vs = networkGraph.vs
     for node in vs:
         node["Qs"] = 0
@@ -122,6 +134,8 @@ def getQsupplyInfo(networkGraph, QsupplyFile, nodesOrder):
         for i in range(1,len(mycsvQs)):
             row = mycsvQs[i]
             bus1 = row[0]
+            if isinstance(bus1, str):
+                bus1 = bus1.upper()
             Qs = row[1]
             nodeIndex = nodesOrder.index(bus1)
             vs[nodeIndex]["Qs"] = float(Qs)
@@ -129,7 +143,7 @@ def getQsupplyInfo(networkGraph, QsupplyFile, nodesOrder):
 
 
 '''get voltage info'''
-def getVoltageProfile(networkGraph, VoltageFile, nodesOrder):
+def getVoltageProfile(networkGraph, nodesOrder, VoltageFile):
     vs = networkGraph.vs
     nodeNumber = len(nodesOrder)
     Vmag = numpy.zeros(nodeNumber)
@@ -140,23 +154,25 @@ def getVoltageProfile(networkGraph, VoltageFile, nodesOrder):
         for i in range(3, len(mycsvVoltage)-1): # skip source bus, rg60, 650 for 13bus
         #for i in range(3, len(mycsvVoltage)):
             row = mycsvVoltage[i]
-            nodeIndex = nodesOrder.index(row[0])
-            vs[nodeIndex]["Vang"] = float(row[4])
-            vs[nodeIndex]["Vmag"] = float(row[5])       
-            Vang[nodeIndex] = float(row[4])
-            Vmag[nodeIndex] = float(row[5])  
+            nodeName = row[0]
+            if nodeName != "150R":
+                nodeIndex = nodesOrder.index(row[0])
+                vs[nodeIndex]["Vang"] = float(row[4])
+                vs[nodeIndex]["Vmag"] = float(row[5])       
+                Vang[nodeIndex] = float(row[4])
+                Vmag[nodeIndex] = float(row[5])  
     return networkGraph, Vmag, Vang
 
 
 '''plot graph'''
 def plotGraph(networkGraph):
     vs = networkGraph.vs
-#    for v in vs:
-#        v["label"] = v.index
-    vs["label"] = vs["name"]
+    for v in vs:
+        v["label"] = v.index
+ #   vs["label"] = vs["name"]
     vs["color"] = ["yellow" if (vertex["type"] == "load")  else "pink" for vertex in vs]
 #    layout = networkGraph.layout("kk")
-    igraph.plot(networkGraph,"123busPlot.png").show()
+    igraph.plot(networkGraph,"13busPlot.png").show()
     return networkGraph
 
 

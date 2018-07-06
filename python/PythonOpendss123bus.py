@@ -10,11 +10,12 @@ import win32com.client
 import time
 import igraph
 import OutputFromOpendss
+import OutputFromOpendss123bus
 import Modification
 import Louvain
 import VoltageControl
 
-
+'''
 OpendssFile = '../opendss/13positivebus/Master.dss'
 LineFile = 'Line.dss'
 TransformerFile = 'Transformer.dss'
@@ -23,8 +24,8 @@ YmatrixFile = 'ieee13nodeckt_EXP_Y.CSV'
 GenFile = "Generator.dss"
 LoadFile = "Load.dss"
 QsupplyFile = "Qsupply.CSV"
-
 '''
+
 OpendssFile = '../opendss/123positivebus/Master.dss'
 LineFile = 'Line.dss'
 TransformerFile = 'Transformer.dss'
@@ -33,7 +34,7 @@ YmatrixFile = 'ieee123_EXP_Y.CSV'
 GenFile = "Generator.dss"
 LoadFile = "Load.dss"
 QsupplyFile = "Qsupply.CSV"
-'''
+
 
 
 
@@ -50,19 +51,19 @@ dssText.Command = "compile "+ OpendssFile
 
 
 '''node info and Y matrix'''
-[networkGraph, nodesOrder, YGmatrix, YBmatrix] = OutputFromOpendss.getNodeAndYmatrix(YmatrixFile)
+[networkGraph, nodesOrder, YGmatrix, YBmatrix] = OutputFromOpendss123bus.getNodeAndYmatrix(YmatrixFile)
 '''edge info'''
-networkGraph = OutputFromOpendss.getEdgeInfo(networkGraph, nodesOrder, LineFile, TransformerFile)
+networkGraph = OutputFromOpendss123bus.getEdgeInfo(networkGraph, nodesOrder, LineFile, TransformerFile)
 '''Q denmand info'''
-networkGraph = OutputFromOpendss.getQdemandInfo(networkGraph,LoadFile, nodesOrder)
+networkGraph = OutputFromOpendss123bus.getQdemandInfo(networkGraph,nodesOrder, LoadFile)
 '''Q supply info'''
-networkGraph = OutputFromOpendss.getQsupplyInfo(networkGraph, QsupplyFile, nodesOrder)
+networkGraph = OutputFromOpendss123bus.getQsupplyInfo(networkGraph, nodesOrder, QsupplyFile)
 '''generation info'''
-networkGraph = OutputFromOpendss.getGenInfo(networkGraph, GenFile, nodesOrder)
+networkGraph = OutputFromOpendss123bus.getGenInfo(networkGraph, nodesOrder, GenFile)
 '''voltage info'''
-[networkGraph, Vmag, Vang] = OutputFromOpendss.getVoltageProfile(networkGraph, VoltageFile, nodesOrder)
+[networkGraph, Vmag, Vang] = OutputFromOpendss123bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
 '''plot graph'''
-networkGraph = OutputFromOpendss.plotGraph(networkGraph)
+networkGraph = OutputFromOpendss123bus.plotGraph(networkGraph)
 
 vs = networkGraph.vs
 
@@ -110,7 +111,7 @@ if voltageIssueFlag == True:
         dssSolution.Solve()
     dssText.Command = "Export Voltages"
     dssText.Command = "Plot Profile Phases=All"
-    networkGraph, Vmag, Vang = OutputFromOpendss.getVoltageProfile(networkGraph, VoltageFile, nodesOrder)
+    networkGraph, Vmag, Vang = OutputFromOpendss.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
     VoltageControl.checkVoltage(Vmag, nodesOrder)
 else:
     print "No voltage issue"
