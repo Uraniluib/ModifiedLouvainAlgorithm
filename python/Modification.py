@@ -11,11 +11,11 @@ import math
 
 
 def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
-    '''
+    
     nodeNumber = len(nodesOrder)
     Qcal = numpy.zeros(nodeNumber)
     JVQ = numpy.zeros((nodeNumber,nodeNumber))
-    
+    '''
     for i in range(0,nodeNumber):
         temp = 0
         for j in range(0, nodeNumber):
@@ -37,7 +37,13 @@ def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
 
     SVQ = numpy.linalg.inv(JVQ)
     '''
-    SVQ = scipy.sparse.linalg.inv(-YBmatrix) # for estimation. not sure to be true
+    
+    for i in range(0, nodeNumber):
+        for j in range(0, nodeNumber):
+            JVQ[i][j] = -Vmag[i]*YBmatrix[i][j]
+            
+            
+    SVQ = numpy.linalg.inv(JVQ) # for estimation. not sure to be true
     return SVQ
     
 
