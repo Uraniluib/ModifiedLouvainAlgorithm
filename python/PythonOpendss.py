@@ -14,6 +14,7 @@ import Modification
 import Louvain
 import VoltageControl
 
+
 OpendssFile = '../opendss/13positivebus/Master.dss'
 LineFile = 'Line.dss'
 TransformerFile = 'Transformer.dss'
@@ -22,6 +23,19 @@ YmatrixFile = 'ieee13nodeckt_EXP_Y.CSV'
 GenFile = "Generator.dss"
 LoadFile = "Load.dss"
 QsupplyFile = "Qsupply.CSV"
+
+'''
+OpendssFile = '../opendss/123positivebus/Master.dss'
+LineFile = 'Line.dss'
+TransformerFile = 'Transformer.dss'
+VoltageFile = 'ieee123_EXP_VOLTAGES.CSV'
+YmatrixFile = 'ieee123_EXP_Y.CSV'
+GenFile = "Generator.dss"
+LoadFile = "Load.dss"
+QsupplyFile = "Qsupply.CSV"
+'''
+
+
 
 '''call OpenDSS'''
 dssObj = win32com.client.Dispatch("OpenDSSEngine.DSS")
@@ -39,18 +53,18 @@ dssText.Command = "compile "+ OpendssFile
 [networkGraph, nodesOrder, YGmatrix, YBmatrix] = OutputFromOpendss.getNodeAndYmatrix(YmatrixFile)
 '''edge info'''
 networkGraph = OutputFromOpendss.getEdgeInfo(networkGraph, nodesOrder, LineFile, TransformerFile)
-'''generation info'''
-networkGraph = OutputFromOpendss.getGenInfo(networkGraph, GenFile, nodesOrder)
 '''Q denmand info'''
 networkGraph = OutputFromOpendss.getQdemandInfo(networkGraph,LoadFile, nodesOrder)
 '''Q supply info'''
 networkGraph = OutputFromOpendss.getQsupplyInfo(networkGraph, QsupplyFile, nodesOrder)
+'''generation info'''
+networkGraph = OutputFromOpendss.getGenInfo(networkGraph, GenFile, nodesOrder)
 '''voltage info'''
 [networkGraph, Vmag, Vang] = OutputFromOpendss.getVoltageProfile(networkGraph, VoltageFile, nodesOrder)
 '''plot graph'''
 networkGraph = OutputFromOpendss.plotGraph(networkGraph)
 
-
+vs = networkGraph.vs
 
 
 '''calculate SVQ'''
@@ -82,21 +96,22 @@ voltageIssueFlag = VoltageControl.checkVoltage(Vmag, nodesOrder)
 '''voltage control when there is voltage issue'''
 if voltageIssueFlag == True:
     # control voltage for every cluster
+    
     for oneCluster in clustering:
-        neededQ = VoltageControl.calReactivePower(networkGraph, oneCluster, SVQ)
-
-        
-    genName = "Generator.g1"
-    dssCircuit.Generators.Name = genName.split(".")[1]
-    oldkvar = dssCircuit.Generators.kvar
-    print oldkvar
-    dssCircuit.Generators.kvar = oldkvar - 100
-    dssSolution.Solve()
+        dQlist, genIndex = VoltageControl.calReactivePower(networkGraph, oneCluster, SVQ)
+        print dQlist
+        for i in range(0, len(genIndex)):
+            genName = vs[genIndex[i]]["genName"]
+            dQ = dQlist[i]
+            dssCircuit.Generators.Name = genName
+            oldkvar = dssCircuit.Generators.kvar
+            dssCircuit.Generators.kvar = oldkvar + dQ*200
+            print dssCircuit.Generators.kvar
+        dssSolution.Solve()
     dssText.Command = "Export Voltages"
     dssText.Command = "Plot Profile Phases=All"
-    print dssCircuit.Generators.kvar
-    voltageList = OutputFromOpendss.getVoltageProfile(VoltageFile)
-    OutputFromOpendss.plotVoltageProfile(voltageList)
+    networkGraph, Vmag, Vang = OutputFromOpendss.getVoltageProfile(networkGraph, VoltageFile, nodesOrder)
+    VoltageControl.checkVoltage(Vmag, nodesOrder)
 else:
     print "No voltage issue"
 

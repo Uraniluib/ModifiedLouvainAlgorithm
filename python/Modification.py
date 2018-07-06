@@ -28,9 +28,9 @@ def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
         for j in range(0, nodeNumber):
             if i != j:
                 Yij = complex(YGmatrix[i][j], YBmatrix[i][j])
-                JVQ[i,j] = -Vmag[i]*Vmag[j]*numpy.absolute(Yij)*math.sin(numpy.angle(Yij, deg=True)+Vang[j]-Vang[i])
+                JVQ[i,j] = -Vmag[i]*numpy.absolute(Yij)*math.sin(numpy.angle(Yij, deg=True)+Vang[j]-Vang[i])
             else:
-                JVQ[i,i] = Qcal[i]-Vmag[i]*Vmag[i]*YBmatrix[i][i]
+                JVQ[i,i] = Qcal[i]/Vmag[i]-Vmag[i]*YBmatrix[i][i]
     SVQ = numpy.linalg.inv(JVQ)
     '''
     SVQ = numpy.linalg.inv(-YBmatrix) # for estimation. not sure to be true

@@ -43,7 +43,7 @@ def calReactivePower(networkGraph, oneCluster, SVQ):
     
     res = opt.minimize(objFun, dQ, method = 'SLSQP', constraints = cons(dQ, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ))
         
-    return res
+    return res.x, genIndex
 
 def objFun(dQ):
     return sum(dQ)
@@ -55,11 +55,11 @@ def cons(dQ, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ):
         nodei = nodeIndexWithVoltageIssue[i]
         conU = {}
         conL = {}
-        [Ufun, Lfun] = con(dQ, networkGraph, nodei, genIndex, SVQ) 
+#        [Ufun, Lfun] = con(dQ, networkGraph, nodei, genIndex, SVQ) 
         conU['type'] = 'ineq'
-        conU['fun'] = lambda x: Ufun
+        conU['fun'] = lambda dQ: 1.05 - con(dQ, networkGraph, nodei, genIndex, SVQ)
         conL['type'] = 'ineq'
-        conL['fun'] = lambda x: Lfun
+        conL['fun'] = lambda dQ: con(dQ, networkGraph, nodei, genIndex, SVQ) - 0.95
         conslist.append(conU)
         conslist.append(conL)
     return conslist
@@ -71,8 +71,13 @@ def con(dQ, networkGraph, nodei, genIndex, SVQ):
     for j in range(0, genNum):
         dV = dV + SVQ[nodei][genIndex[j]]*dQ[j]
     Vnew = vs[nodei]["Vmag"] + dV 
-    Ufun = 1.05 - Vnew
-    Lfun = Vnew - 0.95
+#    Ufun = 1.05 - Vnew
+#    Lfun = Vnew - 0.95
         
-    return Ufun, Lfun
+    return Vnew
 
+def bnds(genIndex):
+    bnds = []
+    for i in range(0, len(genIndex)):
+        bnds.append((0,None))
+    return bnds

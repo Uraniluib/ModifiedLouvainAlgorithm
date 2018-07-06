@@ -1,0 +1,4 @@
+New "Capacitor.c83" bus1=83 phases=1 kv=2.4018 kvar=[ 200]
+New "Capacitor.c88a" bus1=88 phases=1 kv=2.402 kvar=[ 16.667]
+New "Capacitor.c90b" bus1=90 phases=1 kv=2.402 kvar=[ 16.667]
+New "Capacitor.c92c" bus1=92 phases=1 kv=2.402 kvar=[ 16.667]
