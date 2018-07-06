@@ -74,7 +74,7 @@ SVQ = Modification.getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder)
 '''cluster the network'''
 #clusterResult = LV.community_multilevel(networkGraph)
 print "========Begin========"
-iteration = 10
+iteration = 1
 
 start_time = time.time()
 

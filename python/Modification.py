@@ -43,7 +43,7 @@ def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
             JVQ[i][j] = -Vmag[i]*YBmatrix[i][j]
             
             
-    SVQ = numpy.linalg.inv(JVQ) # for estimation. not sure to be true
+    SVQ = numpy.linalg.pinv(JVQ) # for estimation. not sure to be true
     return SVQ
     
 
