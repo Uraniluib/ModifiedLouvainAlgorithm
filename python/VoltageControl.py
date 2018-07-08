@@ -8,14 +8,16 @@ import numpy
 import scipy.optimize as opt
 
 
-def checkVoltage(Vmag, nodesOrder):
+def checkVoltage(networkGraph, nodesOrder):
     voltageIssueFlag = False
+    vs = networkGraph.vs
     x = []
     y = []   
-    for i in range(0, len(Vmag)):
+    for i in range(0, len(nodesOrder)):
+        Vmag = vs[i]["Vmag"]
         x.append(i)
-        y.append(Vmag[i])
-        if Vmag[i] > 1.05:
+        y.append(Vmag)
+        if Vmag > 1.05:
             voltageIssueFlag = True
     plt.ylim(0.99, 1.1)
     plt.scatter(x,y)

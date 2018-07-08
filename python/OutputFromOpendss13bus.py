@@ -25,6 +25,9 @@ def getNodeAndYmatrix(YmatrixFile):
         YGmatrix = numpy.zeros((nodeNumber,nodeNumber))
         YBmatrix = numpy.zeros((nodeNumber,nodeNumber))
         
+        Zbase = 2.4*2.4*1000/100
+        Ybase = 1/Zbase
+        
         '''get matrix'''
         for i in range(3,len(mycsvY)-1): #delete sourcebus, rg60, 650 for 13bus
         #for i in range(3, len(mycsvY)): #for 123bus
@@ -44,6 +47,8 @@ def getNodeAndYmatrix(YmatrixFile):
                 YBmatrix[i-3][n] = Bvalue # pay attention to i
                 j = j+2
                 n = n+1
+    YGmatrix = YGmatrix/Ybase
+    YBmatrix = YBmatrix/Ybase
     return networkGraph, nodesOrder, YGmatrix, YBmatrix
 
 
@@ -55,30 +60,32 @@ def getEdgeInfo(networkGraph, nodesOrder, LineFile, TransformerFile):
     f1 = open(LineFile,'r')
     f11 = f1.readlines()
     for x in f11:
-        bus1 = re.findall(r'(?<=bus1=).+?(?= )',x)[0]
-        bus2 = re.findall(r'(?<=bus2=).+?(?= )',x)[0]
-        if isinstance(bus1, str):
-            bus1 = bus1.upper()
-        if isinstance(bus2, str):
-            bus2 = bus2.upper()
-        if bus1 in nodesOrder and bus2 in nodesOrder:
-            networkGraph.add_edge(bus1,bus2)
+        if not x.startswith('!') and x != "\n":
+            bus1 = re.findall(r'(?<=bus1=).+?(?= )',x)[0]
+            bus2 = re.findall(r'(?<=bus2=).+?(?= )',x)[0]
+            if isinstance(bus1, str):
+                bus1 = bus1.upper()
+            if isinstance(bus2, str):
+                bus2 = bus2.upper()
+            if bus1 in nodesOrder and bus2 in nodesOrder:
+                networkGraph.add_edge(bus1,bus2)
 
     '''read transformer file'''
     f2 = open(TransformerFile,'r')
     f22 = f2.readlines()
     for x in f22:
-        buses = re.findall(r'(?<=buses=\[).+?(?=\ \])',x)[0]
-        buses = ''.join(buses.split())
-        buses = buses.split(",")
-        bus1 = buses[0]
-        bus2 = buses[1]
-        if isinstance(bus1, str):
-            bus1 = bus1.upper()
-        if isinstance(bus2, str):
-            bus2 = bus2.upper()
-        if bus1 in nodesOrder and bus2 in nodesOrder:
-            networkGraph.add_edge(bus1,bus2)
+        if not x.startswith('!') and x != "\n":
+            buses = re.findall(r'(?<=buses=\[).+?(?=\ \])',x)[0]
+            buses = ''.join(buses.split())
+            buses = buses.split(",")
+            bus1 = buses[0]
+            bus2 = buses[1]
+            if isinstance(bus1, str):
+                bus1 = bus1.upper()
+            if isinstance(bus2, str):
+                bus2 = bus2.upper()
+            if bus1 in nodesOrder and bus2 in nodesOrder:
+                networkGraph.add_edge(bus1,bus2)
     return networkGraph    
 
 
@@ -111,13 +118,15 @@ def getQdemandInfo(networkGraph, nodesOrder, LoadFile):
     f1 = open(LoadFile,'r')
     f11 = f1.readlines()
     for x in f11:
-        if not x.startswith('!'):
+        if not x.startswith('!') and x != "\n":
             Qd = re.findall(r'(?<=kvar=).+?(?=\n)',x)[0]
+            Vbase = re.findall(r'(?<=kV=).+?(?=\ )',x)[0]
             bus1 = re.findall(r'(?<=bus1=).+?(?=\ )',x)[0]
             if isinstance(bus1, str):
                 bus1 = bus1.upper()
             nodeIndex = nodesOrder.index(bus1)
-            vs[nodeIndex]["Qd"] = vs[nodeIndex]["Qd"] + float(Qd)
+            vs[nodeIndex]["Qd"] = vs[nodeIndex]["Qd"] + float(Qd)/100
+            vs[nodeIndex]["Vbase"] = Vbase
     return networkGraph    
 
 
@@ -138,7 +147,7 @@ def getQsupplyInfo(networkGraph, nodesOrder, QsupplyFile):
                 bus1 = bus1.upper()
             Qs = row[1]
             nodeIndex = nodesOrder.index(bus1)
-            vs[nodeIndex]["Qs"] = float(Qs)
+            vs[nodeIndex]["Qs"] = float(Qs)/100
     return networkGraph
 
 
@@ -146,8 +155,6 @@ def getQsupplyInfo(networkGraph, nodesOrder, QsupplyFile):
 def getVoltageProfile(networkGraph, nodesOrder, VoltageFile):
     vs = networkGraph.vs
     nodeNumber = len(nodesOrder)
-    Vmag = numpy.zeros(nodeNumber)
-    Vang = numpy.zeros(nodeNumber)
     with open(VoltageFile,'rb') as csvfileVoltage:
         csvreaderVoltage=csv.reader(csvfileVoltage)
         mycsvVoltage=list(csvreaderVoltage)
@@ -158,10 +165,12 @@ def getVoltageProfile(networkGraph, nodesOrder, VoltageFile):
             if nodeName != "150R":
                 nodeIndex = nodesOrder.index(row[0])
                 vs[nodeIndex]["Vang"] = float(row[4])
-                vs[nodeIndex]["Vmag"] = float(row[5])       
-                Vang[nodeIndex] = float(row[4])
-                Vmag[nodeIndex] = float(row[5])  
-    return networkGraph, Vmag, Vang
+                vs[nodeIndex]["Vmag"] = float(row[5])   #3 for actual 5 for pu   
+#                Vang[nodeIndex] = float(row[4])
+#                Vmag[nodeIndex] = float(row[3])  
+#                Vmagpu[nodeIndex] = float(row[5])
+    
+    return networkGraph
 
 
 '''plot graph'''

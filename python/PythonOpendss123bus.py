@@ -15,6 +15,8 @@ import Modification
 import Louvain
 import VoltageControl
 
+
+
 '''
 OpendssFile = '../opendss/13positivebus/Master.dss'
 LineFile = 'Line.dss'
@@ -77,18 +79,22 @@ print "========Begin========"
 iteration = 1
 
 start_time = time.time()
-
+'''
 for i in range(0,iteration):
-    membership = Louvain.louvain(networkGraph, SVQ)
+    membership = Louvain.louvain(networkGraph, None)
     clustering = igraph.Clustering(membership)
     print 'Modularity: ', igraph.Graph.modularity(networkGraph, membership)
     #print clustering
 
+'''
+igraph.Graph.community_multilevel(networkGraph)
 end_time = time.time()
 #print result
 #print 'Degree distribution: ',networkGraph.degree_distribution()
-print 'Running time: ',(end_time - start_time)/iteration
 
+
+print 'Running time: ',(end_time - start_time)/iteration
+print clustering
 
 
 '''check and plot original voltage profile'''
@@ -111,7 +117,7 @@ if voltageIssueFlag == True:
         dssSolution.Solve()
     dssText.Command = "Export Voltages"
     dssText.Command = "Plot Profile Phases=All"
-    networkGraph, Vmag, Vang = OutputFromOpendss.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
+    networkGraph, Vmag, Vang = OutputFromOpendss123bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
     VoltageControl.checkVoltage(Vmag, nodesOrder)
 else:
     print "No voltage issue"

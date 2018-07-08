@@ -9,6 +9,8 @@ import numpy
 import scipy
 import math
 
+numpy.set_printoptions(threshold=numpy.inf)
+
 
 def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
     
@@ -31,6 +33,7 @@ def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
             if i != j:
                 Yij = complex(YGmatrix[i][j], YBmatrix[i][j])
                 JVQ[i,j] = -Vmag[i]*numpy.absolute(Yij)*math.sin(numpy.angle(Yij, deg=True)+Vang[j]-Vang[i])
+                #JVQ[i,j] = Vmag[i]*(YGmatrix[i][j]*math.sin(Vang[i]-Vang[j]) - YBmatrix[i][j]*math.cos(Vang[i]-Vang[j]))
             else:
                 JVQ[i,i] = Qcal[i]/Vmag[i]-Vmag[i]*YBmatrix[i][i]
     
@@ -41,9 +44,11 @@ def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
     for i in range(0, nodeNumber):
         for j in range(0, nodeNumber):
             JVQ[i][j] = -Vmag[i]*YBmatrix[i][j]
+            #JVQ[i][j] = -YBmatrix[i][j]
             
             
-    SVQ = numpy.linalg.pinv(JVQ) # for estimation. not sure to be true
+    SVQ = numpy.linalg.inv(JVQ) # for estimation. not sure to be true
+    
     return SVQ
     
 

@@ -16,6 +16,7 @@ Created on Thu Jun 21 20:51:01 2018
 import win32com.client
 import time
 import igraph
+import numpy
 import OutputFromOpendss13bus
 import OutputFromOpendss123bus
 import Modification
@@ -67,12 +68,17 @@ networkGraph = OutputFromOpendss13bus.getQsupplyInfo(networkGraph, nodesOrder, Q
 '''generation info'''
 networkGraph = OutputFromOpendss13bus.getGenInfo(networkGraph, nodesOrder, GenFile)
 '''voltage info'''
-[networkGraph, Vmag, Vang] = OutputFromOpendss13bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
+networkGraph = OutputFromOpendss13bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
 '''plot graph'''
 networkGraph = OutputFromOpendss13bus.plotGraph(networkGraph)
 
 vs = networkGraph.vs
-
+nodeNumber = len(nodesOrder)
+Vmag = numpy.zeros(nodeNumber)
+Vang = numpy.zeros(nodeNumber)
+for i in range(0, nodeNumber):
+    Vmag[i] = vs[i]["Vmag"]
+    Vang[i] = vs[i]["Vang"]
 
 '''calculate SVQ'''
 SVQ = Modification.getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder)
@@ -80,7 +86,7 @@ SVQ = Modification.getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder)
 '''cluster the network'''
 #clusterResult = LV.community_multilevel(networkGraph)
 print "========Begin========"
-iteration = 10
+iteration = 1
 
 start_time = time.time()
 
@@ -95,10 +101,12 @@ end_time = time.time()
 #print 'Degree distribution: ',networkGraph.degree_distribution()
 print 'Running time: ',(end_time - start_time)/iteration
 
+print clustering
+
 
 
 '''check and plot original voltage profile'''
-voltageIssueFlag = VoltageControl.checkVoltage(Vmag, nodesOrder)
+voltageIssueFlag = VoltageControl.checkVoltage(networkGraph, nodesOrder)
 
 '''voltage control when there is voltage issue'''
 if voltageIssueFlag == True:
@@ -112,13 +120,13 @@ if voltageIssueFlag == True:
             dQ = dQlist[i]
             dssCircuit.Generators.Name = genName
             oldkvar = dssCircuit.Generators.kvar
-            dssCircuit.Generators.kvar = oldkvar + dQ
+            dssCircuit.Generators.kvar = oldkvar + dQ*100
             print dssCircuit.Generators.kvar
         dssSolution.Solve()
     dssText.Command = "Export Voltages"
     dssText.Command = "Plot Profile Phases=All"
-    networkGraph, Vmag, Vang = OutputFromOpendss.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
-    VoltageControl.checkVoltage(Vmag, nodesOrder)
+    networkGraph = OutputFromOpendss13bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
+    voltageIssueFlag = VoltageControl.checkVoltage(networkGraph, nodesOrder)
 else:
     print "No voltage issue"
 
