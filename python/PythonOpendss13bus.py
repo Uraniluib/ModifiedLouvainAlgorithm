@@ -68,17 +68,11 @@ networkGraph = OutputFromOpendss13bus.getQsupplyInfo(networkGraph, nodesOrder, Q
 '''generation info'''
 networkGraph = OutputFromOpendss13bus.getGenInfo(networkGraph, nodesOrder, GenFile)
 '''voltage info'''
-networkGraph = OutputFromOpendss13bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
+networkGraph, Vmag, Vang = OutputFromOpendss13bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
 '''plot graph'''
 networkGraph = OutputFromOpendss13bus.plotGraph(networkGraph)
 
 vs = networkGraph.vs
-nodeNumber = len(nodesOrder)
-Vmag = numpy.zeros(nodeNumber)
-Vang = numpy.zeros(nodeNumber)
-for i in range(0, nodeNumber):
-    Vmag[i] = vs[i]["Vmag"]
-    Vang[i] = vs[i]["Vang"]
 
 '''calculate SVQ'''
 SVQ = Modification.getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder)
@@ -107,13 +101,16 @@ print clustering
 
 
 
-'''check and plot original voltage profile'''
-voltageIssueFlag = VoltageControl.checkVoltage(networkGraph, nodesOrder)
+'''plot original voltage profile'''
+VoltageControl.plotVoltage(Vmag, nodesOrder)
 
 '''voltage control when there is voltage issue'''
 
 # control voltage for every cluster
-for oneCluster in clustering:
+for clusterId in range(0, len(clustering)):
+#for oneCluster in clustering:
+    oneCluster = clustering[clusterId]
+    voltageIssueFlag = VoltageControl.checkVoltage(Vmag, oneCluster)
     if voltageIssueFlag == True:
         dQlist, genIndex = VoltageControl.calReactivePower(networkGraph, oneCluster, SVQ)
         print dQlist
@@ -125,9 +122,20 @@ for oneCluster in clustering:
             dssCircuit.Generators.kvar = oldkvar + dQ*100
             print dssCircuit.Generators.kvar
         dssSolution.Solve()
+    else:
+        print "no voltage issue in cluster ", clusterId
+        
 dssText.Command = "Export Voltages"
 dssText.Command = "Plot Profile Phases=All"
-networkGraph = OutputFromOpendss13bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
-voltageIssueFlag = VoltageControl.checkVoltage(networkGraph, nodesOrder)
+networkGraph, Vmag, Vang = OutputFromOpendss13bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
+VoltageControl.plotVoltage(Vmag, nodesOrder)
+for clusterId in range(0, len(clustering)):
+    oneCluster = clustering[clusterId]
+    voltageIssueFlag = VoltageControl.checkVoltage(Vmag, oneCluster)
+    if voltageIssueFlag == True:
+        print "voltage issue after control"
+    else:
+        print "no voltage issue after control"
+
 
 

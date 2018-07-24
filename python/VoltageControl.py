@@ -8,25 +8,23 @@ import numpy
 import scipy.optimize as opt
 
 
-def checkVoltage(networkGraph, nodesOrder):
-    voltageIssueFlag = False
-    vs = networkGraph.vs
+def plotVoltage(Vmag, nodesOrder):
     x = []
     y = []   
     for i in range(0, len(nodesOrder)):
-        Vmag = vs[i]["Vmag"]
         x.append(i)
-        y.append(Vmag)
-        if Vmag > 1.05:
-            voltageIssueFlag = True
+        y.append(Vmag[i])
     plt.ylim(0.99, 1.1)
     plt.scatter(x,y)
     plt.plot((0,len(y)),(1.05,1.05),'r')
     plt.show()
-    if voltageIssueFlag == True:
-        print "overvoltage detected!"
-    else:
-        print "no voltage issue!"
+
+def checkVoltage(Vmag, oneCluster):
+    voltageIssueFlag = False
+    for i in oneCluster:
+        if Vmag[i] > 1.05:
+            voltageIssueFlag = True
+            return voltageIssueFlag
     return voltageIssueFlag
 
 

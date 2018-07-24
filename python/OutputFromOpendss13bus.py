@@ -155,6 +155,8 @@ def getQsupplyInfo(networkGraph, nodesOrder, QsupplyFile):
 def getVoltageProfile(networkGraph, nodesOrder, VoltageFile):
     vs = networkGraph.vs
     nodeNumber = len(nodesOrder)
+    Vmag = numpy.zeros(nodeNumber)
+    Vang = numpy.zeros(nodeNumber)
     with open(VoltageFile,'rb') as csvfileVoltage:
         csvreaderVoltage=csv.reader(csvfileVoltage)
         mycsvVoltage=list(csvreaderVoltage)
@@ -166,11 +168,9 @@ def getVoltageProfile(networkGraph, nodesOrder, VoltageFile):
                 nodeIndex = nodesOrder.index(row[0])
                 vs[nodeIndex]["Vang"] = float(row[4])
                 vs[nodeIndex]["Vmag"] = float(row[5])   #3 for actual 5 for pu   
-#                Vang[nodeIndex] = float(row[4])
-#                Vmag[nodeIndex] = float(row[3])  
-#                Vmagpu[nodeIndex] = float(row[5])
-    
-    return networkGraph
+                Vang[nodeIndex] = float(row[4])
+                Vmag[nodeIndex] = float(row[5])  
+    return networkGraph, Vmag, Vang
 
 
 '''plot graph'''
