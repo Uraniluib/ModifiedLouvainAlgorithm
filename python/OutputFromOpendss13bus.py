@@ -47,8 +47,8 @@ def getNodeAndYmatrix(YmatrixFile):
                 YBmatrix[i-3][n] = Bvalue # pay attention to i
                 j = j+2
                 n = n+1
-    YGmatrix = YGmatrix/Ybase
-    YBmatrix = YBmatrix/Ybase
+    YGmatrix = YGmatrix/(Ybase)
+    YBmatrix = YBmatrix/(Ybase)
     return networkGraph, nodesOrder, YGmatrix, YBmatrix
 
 

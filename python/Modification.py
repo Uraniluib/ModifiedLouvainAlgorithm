@@ -22,17 +22,27 @@ def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
         temp = 0
         for j in range(0, nodeNumber):
             if i!=j:
-                Yij = complex(YGmatrix[i][j], YBmatrix[i][j])
-                temp = temp-Vmag[i]*Vmag[j]*numpy.absolute(Yij)*math.sin(numpy.angle(Yij, deg=True)+Vang[j]-Vang[i])
+                temp = temp-Vmag[i]*Vmag[j]*(YBmatrix[i][j]*math.cos(Vang[j]-Vang[i])+ YGmatrix[i][j] * math.sin(Vang[j]-Vang[i]))
             else:
                 temp = temp-Vmag[i]*Vmag[i]*YBmatrix[i][i]
         Qcal[i] = temp
+    '''
     
+    
+    for i in range(0,nodeNumber):
+        temp = 0
+        for j in range(0, nodeNumber):
+            temp = temp - Vmag[i] * Vmag[j] * (YBmatrix[i][j] * math.cos(Vang[j]-Vang[i]) + YGmatrix[i][j] * math.sin(Vang[j]-Vang[i]))
+        Qcal[i] = temp
+        
+        
+        
     for i in range(0, nodeNumber):
         for j in range(0, nodeNumber):
             if i != j:
-                Yij = complex(YGmatrix[i][j], YBmatrix[i][j])
-                JVQ[i,j] = -Vmag[i]*numpy.absolute(Yij)*math.sin(numpy.angle(Yij, deg=True)+Vang[j]-Vang[i])
+                #Yij = complex(YGmatrix[i][j], YBmatrix[i][j])
+                #JVQ[i,j] = -Vmag[i]*numpy.absolute(Yij)*math.sin(numpy.angle(Yij, deg=True)+Vang[j]-Vang[i])
+                JVQ[i,j] = -Vmag[i] * (YBmatrix[i][j] * math.cos(Vang[j]-Vang[i]) + YGmatrix[i][j] * math.sin(Vang[j]-Vang[i])) 
                 #JVQ[i,j] = Vmag[i]*(YGmatrix[i][j]*math.sin(Vang[i]-Vang[j]) - YBmatrix[i][j]*math.cos(Vang[i]-Vang[j]))
             else:
                 JVQ[i,i] = Qcal[i]/Vmag[i]-Vmag[i]*YBmatrix[i][i]
@@ -40,15 +50,15 @@ def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
 
     SVQ = numpy.linalg.inv(JVQ)
     '''
-    
+#    JVQ2 = numpy.zeros((nodeNumber,nodeNumber))
     for i in range(0, nodeNumber):
         for j in range(0, nodeNumber):
             JVQ[i][j] = -Vmag[i]*YBmatrix[i][j]
             #JVQ[i][j] = -YBmatrix[i][j]
             
             
-    SVQ = numpy.linalg.inv(JVQ) # for estimation. not sure to be true
-    
+    SVQ = numpy.linalg.inv(JVQ) 
+    '''
     return SVQ
     
 

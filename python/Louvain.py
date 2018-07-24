@@ -86,9 +86,11 @@ def louvain(graph, SVQ):
                 #else:
                     #enum_time += 1
             #fjowieaf = 0
+            '''
             for sc in subcluster:
                 if sc in random_order_copy:
                     random_order_copy.remove(sc)
+            '''
             #fjowieaf = 0
             #after all cluster is tested
             #node = (node + 1) % node_number

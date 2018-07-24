@@ -90,6 +90,8 @@ iteration = 1
 
 start_time = time.time()
 
+#cluster = networkGraph.community_multilevel()
+
 for i in range(0,iteration):
     membership = Louvain.louvain(networkGraph, SVQ)
     clustering = igraph.Clustering(membership)
@@ -109,10 +111,10 @@ print clustering
 voltageIssueFlag = VoltageControl.checkVoltage(networkGraph, nodesOrder)
 
 '''voltage control when there is voltage issue'''
-if voltageIssueFlag == True:
-    # control voltage for every cluster
-    
-    for oneCluster in clustering:
+
+# control voltage for every cluster
+for oneCluster in clustering:
+    if voltageIssueFlag == True:
         dQlist, genIndex = VoltageControl.calReactivePower(networkGraph, oneCluster, SVQ)
         print dQlist
         for i in range(0, len(genIndex)):
@@ -123,10 +125,9 @@ if voltageIssueFlag == True:
             dssCircuit.Generators.kvar = oldkvar + dQ*100
             print dssCircuit.Generators.kvar
         dssSolution.Solve()
-    dssText.Command = "Export Voltages"
-    dssText.Command = "Plot Profile Phases=All"
-    networkGraph = OutputFromOpendss13bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
-    voltageIssueFlag = VoltageControl.checkVoltage(networkGraph, nodesOrder)
-else:
-    print "No voltage issue"
+dssText.Command = "Export Voltages"
+dssText.Command = "Plot Profile Phases=All"
+networkGraph = OutputFromOpendss13bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
+voltageIssueFlag = VoltageControl.checkVoltage(networkGraph, nodesOrder)
+
 
