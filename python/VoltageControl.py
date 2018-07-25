@@ -50,7 +50,7 @@ def calReactivePower(networkGraph, oneCluster, SVQ):
     return res.x, genIndex
 
 def objFun(dQ):
-    return sum(numpy.absolute(dQ))
+    return sum([abs(number) for number in dQ])
 
 
 def cons(dQ, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ):
@@ -73,6 +73,7 @@ def cons(dQ, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ):
     '''
     for i in range(0, issueNum):
         nodei = nodeIndexWithVoltageIssue[i]
+        vol = vs[nodei]["Vmag"]
         SVQrow = []
         for j in range(0, genNum):
             SVQrow.append(SVQ[nodei][genIndex[j]])        
@@ -80,13 +81,13 @@ def cons(dQ, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ):
         '''upper constraint for Vnodei'''
         conU = {}
         conU['type'] = 'ineq'
-        conU['fun'] = lambda dQ: 1.05 - (vs[nodei]["Vmag"] + (SVQrow * dQ).sum())
+        conU['fun'] = lambda dQ: 1.05 - (vol + (SVQrow * dQ).sum())
         conslist.append(conU)
         
         '''lower constraint for Vnodei'''
         conL = {}
         conL['type'] = 'ineq'
-        conL['fun'] = lambda dQ: (vs[nodei]["Vmag"] + (SVQrow * dQ).sum()) - 0.95
+        conL['fun'] = lambda dQ: (vol + (SVQrow * dQ).sum()) - 0.95
         conslist.append(conL)
     print len(conslist)
     return conslist
