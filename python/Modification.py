@@ -47,7 +47,7 @@ def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
             else:
                 JVQ[i,i] = Qcal[i]/Vmag[i]-Vmag[i]*YBmatrix[i][i]
     
-
+   # print "JVQ from exant calculation", JVQ
     SVQ = numpy.linalg.inv(JVQ)
     '''
 #    JVQ2 = numpy.zeros((nodeNumber,nodeNumber))
@@ -56,9 +56,11 @@ def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
             JVQ[i][j] = -Vmag[i]*YBmatrix[i][j]
             #JVQ[i][j] = -YBmatrix[i][j]
             
-            
+    print "JVQ from fast decoupled method", JVQ
     SVQ = numpy.linalg.inv(JVQ) 
+    
     '''
+   # print "SVQ", SVQ
     return SVQ
     
 

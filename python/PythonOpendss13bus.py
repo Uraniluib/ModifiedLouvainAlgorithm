@@ -77,7 +77,13 @@ vs = networkGraph.vs
 '''calculate SVQ'''
 SVQ = Modification.getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder)
 
-'''cluster the network'''
+'''
+#louvain algorithm in igraph
+originalClustering = networkGraph.community_multilevel()
+print originalClustering
+print "modularity = ", networkGraph.modularity(originalClustering.membership)
+
+#cluster the network
 #clusterResult = LV.community_multilevel(networkGraph)
 print "========Begin========"
 iteration = 1
@@ -98,14 +104,19 @@ end_time = time.time()
 print 'Running time: ',(end_time - start_time)/iteration
 
 print clustering
+'''
 
 
+'''not clustering'''
+membership  = [0] * len(nodesOrder)
+clustering = igraph.Clustering(membership)
+print clustering
 
 '''plot original voltage profile'''
 VoltageControl.plotVoltage(Vmag, nodesOrder)
 
 '''voltage control when there is voltage issue'''
-
+start_time = time.time()
 # control voltage for every cluster
 for clusterId in range(0, len(clustering)):
 #for oneCluster in clustering:
@@ -122,10 +133,16 @@ for clusterId in range(0, len(clustering)):
             dssCircuit.Generators.kvar = oldkvar + dQ*100
             print dssCircuit.Generators.kvar
         dssSolution.Solve()
+        dssText.Command = "Export Voltages"
+        networkGraph, Vmag, Vang = OutputFromOpendss13bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
+
     else:
         print "no voltage issue in cluster ", clusterId
-        
-dssText.Command = "Export Voltages"
+   
+     
+end_time = time.time()      
+print 'Running time: ',(end_time - start_time)
+
 dssText.Command = "Plot Profile Phases=All"
 networkGraph, Vmag, Vang = OutputFromOpendss13bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
 VoltageControl.plotVoltage(Vmag, nodesOrder)
