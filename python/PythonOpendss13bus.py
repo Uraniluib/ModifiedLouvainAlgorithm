@@ -104,13 +104,14 @@ end_time = time.time()
 print 'Running time: ',(end_time - start_time)/iteration
 
 print clustering
+
+
 '''
-
-
-'''not clustering'''
+#not clustering
 membership  = [0] * len(nodesOrder)
 clustering = igraph.Clustering(membership)
 print clustering
+
 
 '''plot original voltage profile'''
 VoltageControl.plotVoltage(Vmag, nodesOrder)
