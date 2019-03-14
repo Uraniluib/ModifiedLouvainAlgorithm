@@ -1,17 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jul 06 12:10:53 2018
+Created on Tue Aug 21 13:46:58 2018
 
-@author: user
+@author: xingg
 """
-
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jun 21 20:51:01 2018
-
-@author: Lusha
-"""
-
 
 import win32com.client
 import time
@@ -20,7 +12,7 @@ import numpy
 import OutputFromOpendss13bus
 import OutputFromOpendss123bus
 import Modification
-import Louvain
+import Louvain1
 import VoltageControl
 
 
@@ -70,7 +62,7 @@ networkGraph = OutputFromOpendss13bus.getGenInfo(networkGraph, nodesOrder, GenFi
 '''voltage info'''
 networkGraph, Vmag, Vang = OutputFromOpendss13bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
 '''plot graph'''
-networkGraph = OutputFromOpendss13bus.plotGraph(networkGraph)
+#networkGraph = OutputFromOpendss13bus.plotGraph(networkGraph)
 
 vs = networkGraph.vs
 
@@ -93,7 +85,7 @@ start_time = time.time()
 #cluster = networkGraph.community_multilevel()
 
 for i in range(0,iteration):
-    membership = Louvain.louvain(networkGraph, SVQ)
+    membership = Louvain1.louvain(networkGraph, SVQ)
     clustering = igraph.Clustering(membership)
     print 'Modularity: ', igraph.Graph.modularity(networkGraph, membership)
     #print clustering
@@ -104,56 +96,3 @@ end_time = time.time()
 print 'Running time: ',(end_time - start_time)/iteration
 
 print clustering
-
-
-'''
-#not clustering
-membership  = [0] * len(nodesOrder)
-clustering = igraph.Clustering(membership)
-print clustering
-'''
-
-'''plot original voltage profile'''
-VoltageControl.plotVoltage(Vmag, nodesOrder)
-
-'''voltage control when there is voltage issue'''
-start_time = time.time()
-# control voltage for every cluster
-for clusterId in range(0, len(clustering)):
-#for oneCluster in clustering:
-    oneCluster = clustering[clusterId]
-    voltageIssueFlag = VoltageControl.checkVoltage(Vmag, oneCluster)
-    if voltageIssueFlag == True:
-        dQlist, genIndex = VoltageControl.calReactivePower(networkGraph, oneCluster, SVQ)
-        print dQlist
-        for i in range(0, len(genIndex)):
-            genName = vs[genIndex[i]]["genName"]
-            dQ = dQlist[i]
-            dssCircuit.Generators.Name = genName
-            oldkvar = dssCircuit.Generators.kvar
-            dssCircuit.Generators.kvar = oldkvar + dQ*100
-            print dssCircuit.Generators.kvar
-        dssSolution.Solve()
-        dssText.Command = "Export Voltages"
-        networkGraph, Vmag, Vang = OutputFromOpendss13bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
-
-    else:
-        print "no voltage issue in cluster ", clusterId
-   
-     
-end_time = time.time()      
-print 'Running time: ',(end_time - start_time)
-
-dssText.Command = "Plot Profile Phases=All"
-networkGraph, Vmag, Vang = OutputFromOpendss13bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
-VoltageControl.plotVoltage(Vmag, nodesOrder)
-for clusterId in range(0, len(clustering)):
-    oneCluster = clustering[clusterId]
-    voltageIssueFlag = VoltageControl.checkVoltage(Vmag, oneCluster)
-    if voltageIssueFlag == True:
-        print "voltage issue after control"
-    else:
-        print "no voltage issue after control"
-
-
-
