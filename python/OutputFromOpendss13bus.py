@@ -59,10 +59,10 @@ def getEdgeInfo(networkGraph, nodesOrder, LineFile, TransformerFile):
     '''read line file'''
     f1 = open(LineFile,'r')
     f11 = f1.readlines()
-    for x in f11:
-        if not x.startswith('!') and x != "\n":
-            bus1 = re.findall(r'(?<=bus1=).+?(?= )',x)[0]
-            bus2 = re.findall(r'(?<=bus2=).+?(?= )',x)[0]
+    for row in f11:
+        if not row.startswith('!') and row != "\n":
+            bus1 = re.findall(r'(?<=bus1=).+?(?= )',row)[0]
+            bus2 = re.findall(r'(?<=bus2=).+?(?= )',row)[0]
             if isinstance(bus1, str):
                 bus1 = bus1.upper()
             if isinstance(bus2, str):
@@ -90,9 +90,19 @@ def getEdgeInfo(networkGraph, nodesOrder, LineFile, TransformerFile):
 
 
 
-'''set gen node and name'''
+'''set gen node, name and value'''
 def getGenInfo(networkGraph, nodesOrder, GenFile):
     vs = networkGraph.vs
+    for node in vs:
+        node["type"] = "load" #initial every node to be load
+        node["Pgen"] = 0
+        node["Pload"] = 0
+        node["QsupplyMax"] = 0
+        node["Qdemand"] = 0
+        node["Qsupply"] = 0
+       
+        
+
     f1 = open(GenFile,'r')
     f11 = f1.readlines()
     for x in f11:
@@ -101,31 +111,35 @@ def getGenInfo(networkGraph, nodesOrder, GenFile):
             if isinstance(bus1, str):
                 bus1 = bus1.upper()
             genName = re.findall(r'(?<=Generator\.).+?(?=\")',x)[0]
+            genP = re.findall(r'(?<=kW=).+?(?=\ )',x)[0]
+            genQ = re.findall(r'(?<=kvar=).',x)[0]
             nodeIndex = nodesOrder.index(bus1)
             vs[nodeIndex]["type"] = "gen"
             vs[nodeIndex]["genName"] = genName
+            vs[nodeIndex]["Pgen"] = float(genP)/100
+            vs[nodeIndex]["Qsupply"] = float(genQ)/100
     return networkGraph
     
 
 
-'''set Q demand info'''
-def getQdemandInfo(networkGraph, nodesOrder, LoadFile):
-    vs = networkGraph.vs
-    for node in vs:
-        node["Qd"] = 0
-        node["type"] = "load"
+'''set PQ load info'''
+def getLoadInfo(networkGraph, nodesOrder, LoadFile):
+    vs = networkGraph.vs        
         
     f1 = open(LoadFile,'r')
     f11 = f1.readlines()
     for x in f11:
         if not x.startswith('!') and x != "\n":
-            Qd = re.findall(r'(?<=kvar=).+?(?=\n)',x)[0]
+            Qdemand = re.findall(r'(?<=kvar=).+?(?=\n)',x)[0]
+            PloadValue = re.findall(r'(?<=kW=).+?(?=\ )',x)[0]
             Vbase = re.findall(r'(?<=kV=).+?(?=\ )',x)[0]
             bus1 = re.findall(r'(?<=bus1=).+?(?=\ )',x)[0]
             if isinstance(bus1, str):
                 bus1 = bus1.upper()
+
             nodeIndex = nodesOrder.index(bus1)
-            vs[nodeIndex]["Qd"] = vs[nodeIndex]["Qd"] + float(Qd)/100
+            vs[nodeIndex]["Pload"] = vs[nodeIndex]["Pload"] + float(PloadValue)/100
+            vs[nodeIndex]["Qdemand"] = vs[nodeIndex]["Qdemand"] + float(Qdemand)/100
             vs[nodeIndex]["Vbase"] = Vbase
     return networkGraph    
 
@@ -134,8 +148,6 @@ def getQdemandInfo(networkGraph, nodesOrder, LoadFile):
 '''set Q supply info'''
 def getQsupplyInfo(networkGraph, nodesOrder, QsupplyFile):
     vs = networkGraph.vs
-    for node in vs:
-        node["Qs"] = 0
         
     with open(QsupplyFile,'rb') as csvfileQs:
         csvreaderQs=csv.reader(csvfileQs)
@@ -145,9 +157,9 @@ def getQsupplyInfo(networkGraph, nodesOrder, QsupplyFile):
             bus1 = row[0]
             if isinstance(bus1, str):
                 bus1 = bus1.upper()
-            Qs = row[1]
+            Qsupply = row[1]
             nodeIndex = nodesOrder.index(bus1)
-            vs[nodeIndex]["Qs"] = float(Qs)/100
+            vs[nodeIndex]["QsupplyMax"] = float(Qsupply)/100
     return networkGraph
 
 

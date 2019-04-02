@@ -91,8 +91,8 @@ def getQbalanceDegree(oneCluster, networkGraph):
     Qs = 0
     for i in range(0, len(oneCluster)):
         nodeIndex = oneCluster[i]
-        Qd = Qd + vs[nodeIndex]["Qd"]
-        Qs = Qs + vs[nodeIndex]["Qs"]
+        Qd = Qd + vs[nodeIndex]["Qdemand"]
+        Qs = Qs + vs[nodeIndex]["QsupplyMax"]
     if Qs > Qd or Qd == 0:
         QbalanceDegree = 0
     else:

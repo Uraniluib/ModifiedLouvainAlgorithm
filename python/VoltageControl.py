@@ -4,7 +4,7 @@ Created on Mon Jun 25 13:39:23 2018
 @author: Lusha
 """
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 import scipy.optimize as opt
 
 
@@ -29,11 +29,13 @@ def checkVoltage(Vmag, oneCluster):
 
 
 
-def calReactivePower(networkGraph, oneCluster, SVQ):
+def calReactivePower(networkGraph, oneCluster, SVQ, YGmatrix, YBmatrix):
     vs = networkGraph.vs
     nodeIndexWithVoltageIssue = []
     genIndex = []
+    VinCluster = []
     for nodeIndex in oneCluster:
+        VinCluster.append(vs[nodeIndex]["Vmag"])
         if vs[nodeIndex]["Vmag"] > 1.05:
             nodeIndexWithVoltageIssue.append(nodeIndex)
         if vs[nodeIndex]["type"] == "gen":
@@ -41,36 +43,52 @@ def calReactivePower(networkGraph, oneCluster, SVQ):
 #    issueNum = len(nodeIndexWithVoltageIssue)
     genNum = len(genIndex)
     
-    dQ = numpy.zeros(genNum)
+    dQ = np.zeros(genNum)
+    variables = np.append(dQ,VinCluster)
     
     #conslist = cons(dQ, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ)
     
-    res = opt.minimize(objFun, dQ, method = 'SLSQP', constraints = cons(dQ, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ))
-        
+#    res = opt.minimize(objFun, variables, method = 'SLSQP', constraints = cons(variables, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ))
+    res = opt.minimize(objFun, variables, method = 'SLSQP', constraints = cons(variables, networkGraph, genIndex, SVQ, oneCluster))
+    
     return res.x, genIndex
 
 def objFun(dQ):
     return sum([abs(number) for number in dQ])
 
-
-def cons(dQ, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ):
+'''
+def cons(variables, networkGraph,  genIndex, SVQ, oneCluster, YGmatrix, YBmatrix):
     vs = networkGraph.vs
-    issueNum = len(nodeIndexWithVoltageIssue)
+ 
+    
     genNum = len(genIndex)
+    dQ = variables[:genNum]
+    VinCluster = variables[genNum:]
+    nodeNum = len(VinCluster)
+    
     conslist = []
-    '''
-    for i in range(0, issueNum):
-        nodei = nodeIndexWithVoltageIssue[i]
+    #new
+    for i in range(0,len(oneCluster)):
+        nodeIndex = oneCluster[i]
+        nodei = vs[nodeIndex]
+        Pgen = nodei["Pgen"]
+        Pload = nodei["Pload"]
+        Qsupply = nodei["Qsupply"]
+        Qdemand = nodei["Qdemand"]
+        
+
+        #upper constraint for Vnodei
         conU = {}
-        conL = {}
-#        [Ufun, Lfun] = con(dQ, networkGraph, nodei, genIndex, SVQ) 
         conU['type'] = 'ineq'
-        conU['fun'] = lambda dQ: 1.05 - con(dQ, networkGraph, nodei, genIndex, SVQ)
-        conL['type'] = 'ineq'
-        conL['fun'] = lambda dQ: con(dQ, networkGraph, nodei, genIndex, SVQ) - 0.95
+        conU['fun'] = lambda dQ, VinCluster: 1.05 - V
         conslist.append(conU)
-        conslist.append(conL)
-    '''
+        
+        #lower constraint for Vnodei
+        conL = {}
+        conL['type'] = 'ineq'
+        conL['fun'] = lambda dQ: (vol + (SVQrow * dQ).sum()) - 0.95
+        conslist.append(conL)    
+    
     for i in range(0, issueNum):
         nodei = nodeIndexWithVoltageIssue[i]
         vol = vs[nodei]["Vmag"]
@@ -78,13 +96,34 @@ def cons(dQ, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ):
         for j in range(0, genNum):
             SVQrow.append(SVQ[nodei][genIndex[j]])        
             
-        '''upper constraint for Vnodei'''
+
+    print len(conslist)
+    return conslist
+
+'''
+def cons(variables, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ):
+    vs = networkGraph.vs
+    issueNum = len(nodeIndexWithVoltageIssue)
+    genNum = len(genIndex)
+    dQ = variables[:genNum]
+    VinCluster = variables[genNum:]
+    
+    conslist = []
+    
+    for i in range(0, issueNum):
+        nodei = nodeIndexWithVoltageIssue[i]
+        vol = vs[nodei]["Vmag"]
+        SVQrow = []
+        for j in range(0, genNum):
+            SVQrow.append(SVQ[nodei][genIndex[j]])        
+            
+        #upper constraint for Vnodei
         conU = {}
         conU['type'] = 'ineq'
         conU['fun'] = lambda dQ: 1.05 - (vol + (SVQrow * dQ).sum())
         conslist.append(conU)
         
-        '''lower constraint for Vnodei'''
+        #lower constraint for Vnodei
         conL = {}
         conL['type'] = 'ineq'
         conL['fun'] = lambda dQ: (vol + (SVQrow * dQ).sum()) - 0.95
