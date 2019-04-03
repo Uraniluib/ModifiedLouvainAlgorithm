@@ -38,14 +38,14 @@ def cons(variables, networkGraph, oneCluster, genList, SVQ, neighborConstraintIn
     conslist = []
     
     # Q generation limit
-    
+    '''
     for geni in range(0, len(genList)):
         gennode = genList[geni]
         conQ = {}
         conQ['type'] = 'ineq'
         conQ['fun'] = lambda variables: vs[gennode]["QsupplyMax"] - (vs[gennode]["Qsupply"] + variables[geni])    
         conslist.append(conQ)
-    
+    '''
     # voltage constraint for currentNode
     for nodei in range(0, len(oneCluster)):
         currentNode = oneCluster[nodei]
@@ -57,15 +57,15 @@ def cons(variables, networkGraph, oneCluster, genList, SVQ, neighborConstraintIn
         # constraint for voltage and delta_Q
         conPowerFlow = {}
         conPowerFlow['type'] = 'eq'
-        conPowerFlow['fun'] = lambda variables: variables[genLen + nodei] - Vinitial - np.dot(SVQrow, variables[:genLen])
+        conPowerFlow['fun'] = lambda variables, nodei = nodei, genLen = genLen, Vinitial = Vinitial, SVQrow = SVQrow: variables[genLen + nodei] - Vinitial - np.dot(SVQrow, variables[:genLen])
         conslist.append(conPowerFlow)
         
         #upper constraint for Vnodei
         conVU = {}
         conVU['type'] = 'ineq'
-        conVU['fun'] = lambda variables: 1.05 - variables[genLen + nodei]
+        conVU['fun'] = lambda variables, genLen = genLen, nodei = nodei: 1.05 - variables[genLen + nodei]
         conslist.append(conVU)
-        
+        '''
         #lower constraint for Vnodei
         conVL = {}
         conVL['type'] = 'ineq'
@@ -81,7 +81,7 @@ def cons(variables, networkGraph, oneCluster, genList, SVQ, neighborConstraintIn
             conVNei['type'] = 'eq'
             conVNei['fun'] = lambda variables: variables[genLen + nodei] - vs[neighborNode]["Vmag"]
             conslist.append(conVNei)
-        
+        '''
    # print len(conslist)
     return conslist
 
