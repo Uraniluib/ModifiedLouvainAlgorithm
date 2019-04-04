@@ -60,7 +60,7 @@ def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
     SVQ = numpy.linalg.inv(JVQ) 
     
     '''
-   # print "SVQ", SVQ
+    print "SVQ", SVQ
     return SVQ
     
 

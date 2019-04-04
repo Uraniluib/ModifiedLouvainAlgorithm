@@ -18,6 +18,20 @@ def plotVoltage(Vmag, nodesOrder):
     plt.scatter(x,y)
     plt.plot((0,len(y)),(1.05,1.05),'r')
     plt.show()
+    
+def VoltageProfile(vs):
+    x = []
+    y = []   
+    for nodei in range(0, len(vs)):
+        currentNodeVol = vs[nodei]["Vmag"]
+        x.append(nodei)
+        y.append(currentNodeVol)
+        print nodei
+        print currentNodeVol
+    plt.ylim(0.99, 1.1)
+    plt.scatter(x,y)
+    plt.plot((0,len(y)),(1.05,1.05),'r')
+    plt.show()    
 
 def checkVoltage(Vmag, oneCluster):
     voltageIssueFlag = False

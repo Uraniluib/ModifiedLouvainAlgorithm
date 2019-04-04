@@ -27,25 +27,24 @@ from functools import partial
 
 def objFun(variables):
 #    return sum([abs(number) for number in variables[:len(genList)]])    
-    return variables[0]  
+#    return sum([abs(number) for number in variables[: genLen]])    
+    return abs(variables[0])
 
 
 def cons(variables, networkGraph, oneCluster, genList, SVQ, neighborConstraintInside, neighborConstraintOutside):
     vs = networkGraph.vs
-#    delta_Q = variables[:len(genList)]
-#    Vlist = variables[len(genList):]
     genLen = len(genList)
     conslist = []
     
     # Q generation limit
-    '''
+    
     for geni in range(0, len(genList)):
         gennode = genList[geni]
         conQ = {}
         conQ['type'] = 'ineq'
-        conQ['fun'] = lambda variables: vs[gennode]["QsupplyMax"] - (vs[gennode]["Qsupply"] + variables[geni])    
+        conQ['fun'] = lambda variables, gennode = gennode, vs = vs, geni = geni: vs[gennode]["QsupplyMax"] - (vs[gennode]["Qsupply"] + variables[geni])    
         conslist.append(conQ)
-    '''
+    
     # voltage constraint for currentNode
     for nodei in range(0, len(oneCluster)):
         currentNode = oneCluster[nodei]
@@ -54,22 +53,30 @@ def cons(variables, networkGraph, oneCluster, genList, SVQ, neighborConstraintIn
         for genj in range(0, genLen):
             SVQrow.append(SVQ[currentNode][genList[genj]])       
             
-        # constraint for voltage and delta_Q
+        # power flow constraint
+        
         conPowerFlow = {}
         conPowerFlow['type'] = 'eq'
         conPowerFlow['fun'] = lambda variables, nodei = nodei, genLen = genLen, Vinitial = Vinitial, SVQrow = SVQrow: variables[genLen + nodei] - Vinitial - np.dot(SVQrow, variables[:genLen])
         conslist.append(conPowerFlow)
         
+        '''
+        conPowerFlowP = {}
+        conPowerFlowP['type'] = 'eq'
+        conPowerFlowP['fun'] = lambda variables: vs[currentNode]["Pgen"] - vs[currentNode]["Pload"] - 
+        conslist.append(conPowerFlowP)
+        '''
+        
         #upper constraint for Vnodei
         conVU = {}
         conVU['type'] = 'ineq'
-        conVU['fun'] = lambda variables, genLen = genLen, nodei = nodei: 1.05 - variables[genLen + nodei]
+        conVU['fun'] = lambda variables, genLen = genLen, nodei = nodei: 1.02 - variables[genLen + nodei]
         conslist.append(conVU)
-        '''
+        
         #lower constraint for Vnodei
         conVL = {}
         conVL['type'] = 'ineq'
-        conVL['fun'] = lambda variables: variables[genLen + nodei] - 0.95
+        conVL['fun'] = lambda variables, genLen = genLen, nodei = nodei: variables[genLen + nodei] - 0.95
         conslist.append(conVL)
         
         
@@ -79,9 +86,9 @@ def cons(variables, networkGraph, oneCluster, genList, SVQ, neighborConstraintIn
             neighborNode = neighborConstraintOutside[position]
             conVNei = {}
             conVNei['type'] = 'eq'
-            conVNei['fun'] = lambda variables: variables[genLen + nodei] - vs[neighborNode]["Vmag"]
+            conVNei['fun'] = lambda variables, genLen = genLen, nodei = nodei, vs = vs, neighborNode = neighborNode: variables[genLen + nodei] - vs[neighborNode]["Vmag"]
             conslist.append(conVNei)
-        '''
+        
    # print len(conslist)
     return conslist
 
@@ -182,12 +189,12 @@ for edge in edgeList:
     if membership[firstEnd] != membership[secondEnd]:
         connectionEdgeList.append((firstEnd, secondEnd))
     
-'''
+
 #not clustering
 membership  = [0] * len(nodesOrder)
 clustering = igraph.Clustering(membership)
 print clustering
-'''
+
 
 
 '''voltage control when there is voltage issue'''
@@ -213,8 +220,10 @@ for clusterId in range(0, len(clustering)):
 clusterOrderByVol = sorted(range(len(highestVoltageList)), key=lambda k: highestVoltageList[k], reverse=True)
     
 '''plot original voltage profile'''
-VoltageControl.plotVoltage(Vmag, nodesOrder)
+#VoltageControl.plotVoltage(Vmag, nodesOrder)
+#VoltageControl.VoltageProfile(Vmag)
 
+VoltageControl.VoltageProfile(vs)    
 
 # control voltage for each cluster
 for clusterId in clusterOrderByVol:
@@ -245,45 +254,50 @@ for clusterId in clusterOrderByVol:
     genList = []
     Vlist = []
     for nodei in oneCluster:
+        print vs[nodei]["name"]
         Vlist.append(vs[nodei]["Vmag"])
         if vs[nodei]["type"] == "gen":
             genList.append(nodei)
     delta_Q = [0]*(len(genList))
+    genLen = len(genList)
     variables = delta_Q + Vlist
     print 'initial variables: ', variables
     ControlResult = opt.minimize(objFun, variables, method = 'SLSQP', constraints = cons(variables, networkGraph, oneCluster, genList, SVQ, neighborConstraintInside, neighborConstraintOutside))
     variables = ControlResult.x
     print 'optimal variables: ',variables
-    
-'''    
-    #check result with Opendss
-    for i in range(0, len(genList)):
-        genName = vs[genList[i]]["genName"]
-        dQ = delta_Q[i]
+    # update Qsupply, V information
+    delta_Q = variables[:genLen]
+    Vlist = variables[genLen:]
+    for geni in range(0, genLen):
+        currentGen = genList[geni]
+        vs[currentGen]["Qsupply"] = vs[currentGen]["Qsupply"] + delta_Q[geni]
+    for nodei in range(0, len(oneCluster)):
+        currentNode = oneCluster[nodei]
+        vs[currentNode]["Vmag"] = Vlist[nodei]    
+    voltageIssueFlag[clusterId] = False
+    # save change in OpenDSS
+    for geni in range(0, genLen):
+        genName = vs[genList[geni]]["genName"]
+        dQ = delta_Q[geni]
         dssCircuit.Generators.Name = genName
         oldkvar = dssCircuit.Generators.kvar
-        dssCircuit.Generators.kvar = oldkvar + dQ*100
-    #print dssCircuit.Generators.kvar
-    dssSolution.Solve()
-    dssText.Command = "Export Voltages"
-    networkGraph = OutputFromOpendss13bus.getGenInfo(networkGraph, nodesOrder, GenFile)
-    networkGraph, Vmag, Vang = OutputFromOpendss13bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
-    vs = networkGraph.vs
-    voltageIssueFlag[clusterId] = False
-    
- '''   
-    # update information 
-'''
-    for i in range(0, len(genList)):
-        gen = genList[i]
-        vs[gen]["Qsupply"] = vs[gen]["Qsupply"] + delta_Q[i]
-        
-    for nodei in oneCluster:
-        SVQrow = []
-        for j in range(0, len(genList)):
-            SVQrow.append(SVQ[nodei][genList[j]])     
-        vs[nodei]["Vmag"] = vs[nodei]["Vmag"] + (SVQrow * delta_Q).sum()
- '''   
+        dssCircuit.Generators.kvar = oldkvar + dQ*100    
+        print dssCircuit.Generators.kvar
+    break
+
+# plot voltage after update
+VoltageControl.VoltageProfile(vs)    
+
+end_time = time.time()      
+print 'Running time: ',(end_time - start_time)
+
+# run OpenDSS to check result
+dssSolution.Solve()
+dssText.Command = "Export Voltages"
+dssText.Command = "Plot Profile Phases=All"
+
+
+
 '''
 for clusterId in range(0, len(clustering)):
     oneCluster = clustering[clusterId]
@@ -307,8 +321,7 @@ for clusterId in range(0, len(clustering)):
         print "no voltage issue in cluster ", clusterId
 '''   
      
-end_time = time.time()      
-print 'Running time: ',(end_time - start_time)
+
 '''
 dssText.Command = "Plot Profile Phases=All"
 networkGraph, Vmag, Vang = OutputFromOpendss13bus.getVoltageProfile(networkGraph, nodesOrder, VoltageFile)
