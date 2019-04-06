@@ -28,13 +28,17 @@ from functools import partial
 def objFun(variables):
 #    return sum([abs(number) for number in variables[:len(genList)]])    
 #    return sum([abs(number) for number in variables[: genLen]])    
-    return abs(variables[0])
+    return abs(variables[0] + variables[1])
 
 
 def cons(variables, networkGraph, oneCluster, genList, SVQ, neighborConstraintInside, neighborConstraintOutside):
     vs = networkGraph.vs
     genLen = len(genList)
     conslist = []
+    
+    
+#    SVQ = lambda variables: Modification.getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder, genLen, oneCluster, variables)
+    
     
     # Q generation limit
     
@@ -44,15 +48,24 @@ def cons(variables, networkGraph, oneCluster, genList, SVQ, neighborConstraintIn
         conQ['type'] = 'ineq'
         conQ['fun'] = lambda variables, gennode = gennode, vs = vs, geni = geni: vs[gennode]["QsupplyMax"] - (vs[gennode]["Qsupply"] + variables[geni])    
         conslist.append(conQ)
-    
+    '''        
+    # SVQ constraint
+    conSVQ = {}
+    conSVQ['type'] = 'eq'
+    conSVQ['fun'] = lambda variables, SVQ = SVQ: SVQ - Modification.getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder, genLen, oneCluster, variables)
+    conslist.append(conSVQ)
+    '''   
     # voltage constraint for currentNode
     for nodei in range(0, len(oneCluster)):
         currentNode = oneCluster[nodei]
         Vinitial = vs[currentNode]["Vmag"]
+        #SVQrow = [0]*genLen
+        SVQ = Modification.getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder, genLen, oneCluster, variables)
         SVQrow = []
         for genj in range(0, genLen):
+            #SVQrow[genj] = lambda SVQ: SVQ[currentNode][genList[genj]]
             SVQrow.append(SVQ[currentNode][genList[genj]])       
-            
+        print "SVQrow: ",SVQrow
         # power flow constraint
         
         conPowerFlow = {}
@@ -60,17 +73,12 @@ def cons(variables, networkGraph, oneCluster, genList, SVQ, neighborConstraintIn
         conPowerFlow['fun'] = lambda variables, nodei = nodei, genLen = genLen, Vinitial = Vinitial, SVQrow = SVQrow: variables[genLen + nodei] - Vinitial - np.dot(SVQrow, variables[:genLen])
         conslist.append(conPowerFlow)
         
-        '''
-        conPowerFlowP = {}
-        conPowerFlowP['type'] = 'eq'
-        conPowerFlowP['fun'] = lambda variables: vs[currentNode]["Pgen"] - vs[currentNode]["Pload"] - 
-        conslist.append(conPowerFlowP)
-        '''
+
         
         #upper constraint for Vnodei
         conVU = {}
         conVU['type'] = 'ineq'
-        conVU['fun'] = lambda variables, genLen = genLen, nodei = nodei: 1.02 - variables[genLen + nodei]
+        conVU['fun'] = lambda variables, genLen = genLen, nodei = nodei: 1.05 - variables[genLen + nodei]
         conslist.append(conVU)
         
         #lower constraint for Vnodei
@@ -180,6 +188,12 @@ end_time = time.time()
 #print 'Degree distribution: ',networkGraph.degree_distribution()
 print 'Running time: ',(end_time - start_time)/iteration
 print clustering
+    
+
+#not clustering
+membership  = [0] * len(nodesOrder)
+clustering = igraph.Clustering(membership)
+print clustering
 
 # neighbor information of clusters
 connectionEdgeList = []
@@ -188,14 +202,7 @@ for edge in edgeList:
     secondEnd = edge[1]
     if membership[firstEnd] != membership[secondEnd]:
         connectionEdgeList.append((firstEnd, secondEnd))
-    
-
-#not clustering
-membership  = [0] * len(nodesOrder)
-clustering = igraph.Clustering(membership)
-print clustering
-
-
+        
 
 '''voltage control when there is voltage issue'''
 start_time = time.time()
@@ -254,7 +261,6 @@ for clusterId in clusterOrderByVol:
     genList = []
     Vlist = []
     for nodei in oneCluster:
-        print vs[nodei]["name"]
         Vlist.append(vs[nodei]["Vmag"])
         if vs[nodei]["type"] == "gen":
             genList.append(nodei)
@@ -265,6 +271,8 @@ for clusterId in clusterOrderByVol:
     ControlResult = opt.minimize(objFun, variables, method = 'SLSQP', constraints = cons(variables, networkGraph, oneCluster, genList, SVQ, neighborConstraintInside, neighborConstraintOutside))
     variables = ControlResult.x
     print 'optimal variables: ',variables
+    SVQafter = Modification.getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder, genLen, oneCluster, variables)
+    print SVQafter - SVQ
     # update Qsupply, V information
     delta_Q = variables[:genLen]
     Vlist = variables[genLen:]
@@ -283,7 +291,7 @@ for clusterId in clusterOrderByVol:
         oldkvar = dssCircuit.Generators.kvar
         dssCircuit.Generators.kvar = oldkvar + dQ*100    
         print dssCircuit.Generators.kvar
-    break
+
 
 # plot voltage after update
 VoltageControl.VoltageProfile(vs)    

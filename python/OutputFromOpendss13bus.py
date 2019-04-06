@@ -11,6 +11,9 @@ import numpy
 import math
 import igraph
 
+
+
+
 '''read Ymatrix file and add vertex in graph'''
 def getNodeAndYmatrix(YmatrixFile):
     networkGraph = igraph.Graph()

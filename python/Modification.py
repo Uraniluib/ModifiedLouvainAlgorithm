@@ -12,22 +12,17 @@ import math
 numpy.set_printoptions(threshold=numpy.inf)
 
 
-def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
+def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder, genLen = -1, oneCluster = None, variables = None):
+    if variables is not None:
+        for nodeid in range(0,len(oneCluster)):
+            currentNodeid = oneCluster[nodeid]
+            Vmag[currentNodeid] = variables[genLen + nodeid]
+    
+    
     
     nodeNumber = len(nodesOrder)
     Qcal = numpy.zeros(nodeNumber)
-    JVQ = numpy.zeros((nodeNumber,nodeNumber))
-    '''
-    for i in range(0,nodeNumber):
-        temp = 0
-        for j in range(0, nodeNumber):
-            if i!=j:
-                temp = temp-Vmag[i]*Vmag[j]*(YBmatrix[i][j]*math.cos(Vang[j]-Vang[i])+ YGmatrix[i][j] * math.sin(Vang[j]-Vang[i]))
-            else:
-                temp = temp-Vmag[i]*Vmag[i]*YBmatrix[i][i]
-        Qcal[i] = temp
-    '''
-    
+    JVQ = numpy.zeros((nodeNumber,nodeNumber))    
     
     for i in range(0,nodeNumber):
         temp = 0
@@ -49,18 +44,8 @@ def getSVQ(YGmatrix, YBmatrix, Vmag, Vang, nodesOrder):
     
    # print "JVQ from exant calculation", JVQ
     SVQ = numpy.linalg.inv(JVQ)
-    '''
-#    JVQ2 = numpy.zeros((nodeNumber,nodeNumber))
-    for i in range(0, nodeNumber):
-        for j in range(0, nodeNumber):
-            JVQ[i][j] = -Vmag[i]*YBmatrix[i][j]
-            #JVQ[i][j] = -YBmatrix[i][j]
-            
-    print "JVQ from fast decoupled method", JVQ
-    SVQ = numpy.linalg.inv(JVQ) 
-    
-    '''
-    print "SVQ", SVQ
+
+    #print "SVQ", SVQ
     return SVQ
     
 
