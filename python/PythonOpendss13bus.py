@@ -28,7 +28,7 @@ from functools import partial
 def objFun(variables):
 #    return sum([abs(number) for number in variables[:len(genList)]])    
 #    return sum([abs(number) for number in variables[: genLen]])    
-    return abs(variables[0] + variables[1])
+    return abs(variables[0]) + abs(variables[1])
 
 
 def cons(variables, networkGraph, oneCluster, genList, SVQ, neighborConstraintInside, neighborConstraintOutside):
