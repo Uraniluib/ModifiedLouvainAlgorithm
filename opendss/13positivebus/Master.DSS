@@ -12,7 +12,7 @@ Redirect Spectrum.DSS
 Redirect Line.DSS
 Redirect Load.DSS
 Redirect Transformer.DSS
-Redirect RegControl.DSS
+!Redirect RegControl.DSS
 Redirect Capacitor.DSS
 Redirect Generator.DSS
 Redirect Monitor.DSS
