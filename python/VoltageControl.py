@@ -139,7 +139,7 @@ def cons(variables, networkGraph, nodeIndexWithVoltageIssue, genIndex, SVQ):
         conL['type'] = 'ineq'
         conL['fun'] = lambda dQ: (vol + (SVQrow * dQ).sum()) - 0.95
         conslist.append(conL)
-    print len(conslist)
+    print(len(conslist))
     return conslist
 
 

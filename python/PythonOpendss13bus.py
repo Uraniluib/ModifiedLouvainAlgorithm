@@ -36,7 +36,7 @@ def Optmz(objFun, variables, networkGraph, oneCluster, genList, SVQ):
 
 if __name__ == '__main__':
     
-    OpendssFile = '../13positivebus/Master.dss'
+    OpendssFile = '../opendss/13positivebus/Master.dss'
     LineFile = 'Line.dss'
     TransformerFile = 'Transformer.dss'
     VoltageFile = 'ieee13nodeckt_EXP_VOLTAGES.CSV'
@@ -93,7 +93,7 @@ if __name__ == '__main__':
     #clusterResult = LV.community_multilevel(networkGraph)'''
     
     
-    print "========Begin========"
+    print("========Begin========")
     iteration = 1
     
     start_time = time.time()
@@ -103,13 +103,13 @@ if __name__ == '__main__':
     for iterationtimes in range(0,iteration):
         membership = Louvain.louvain(networkGraph, SVQ)
         clustering = igraph.Clustering(membership)
-        print 'Modularity: ', igraph.Graph.modularity(networkGraph, membership)
+        print('Modularity: ', igraph.Graph.modularity(networkGraph, membership))
         
     end_time = time.time()
     #print result
     #print 'Degree distribution: ',networkGraph.degree_distribution()
-    print 'Running time: ',(end_time - start_time)/iteration
-    print clustering
+    print('Running time: ',(end_time - start_time)/iteration)
+    print(clustering)
         
     '''
     #not clustering
@@ -146,7 +146,7 @@ if __name__ == '__main__':
             voltageIssueFlag.append(False)
         highestVoltageList.append(tempHighest)
     
-    print voltageIssueFlag
+    print(voltageIssueFlag)
         
     # the index of clusters in order of descending Vmag
     clusterOrderByVol = sorted(range(len(highestVoltageList)), key=lambda k: highestVoltageList[k], reverse=True)
@@ -156,7 +156,7 @@ if __name__ == '__main__':
     #VoltageControl.VoltageProfile(Vmag)
     
     VoltageControl.VoltageProfile(vs)   
-    for v in vs: print v["name"],' ',v["Vmag"] 
+    for v in vs: print(v["name"],' ',v["Vmag"] )
     
     # control voltage for each cluster
     processes = []
@@ -195,15 +195,15 @@ if __name__ == '__main__':
                 genList.append(nodei)
         delta_Q = [0]*(len(genList))
         genLen = len(genList)
-        print genList
+        print(genList)
         variables = delta_Q + Vlist
-        print 'initial variables: ', variables
+        print('initial variables: ', variables)
         
-        process = Process(target = localControl, args = (variables, networkGraph, oneCluster, genList, SVQ))
-        processes.append(process)
-        process.start()
+        #process = Process(target = localControl, args = (variables, networkGraph, oneCluster, genList, SVQ))
+        #processes.append(process)
+        #process.start()
         
-        #localControl.localControl(variables, networkGraph, oneCluster, genList, SVQ)
+        localControl.localControl(variables, networkGraph, oneCluster, genList, SVQ)
 
         
         '''

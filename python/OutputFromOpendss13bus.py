@@ -19,7 +19,7 @@ def getNodeAndYmatrix(YmatrixFile):
     networkGraph = igraph.Graph()
     nodesOrder = []
     
-    with open(YmatrixFile,'rb') as csvfileY:
+    with open(YmatrixFile,'r') as csvfileY:
         csvreaderY=csv.reader(csvfileY)
         mycsvY=list(csvreaderY)
         
@@ -152,7 +152,7 @@ def getLoadInfo(networkGraph, nodesOrder, LoadFile):
 def getQsupplyInfo(networkGraph, nodesOrder, QsupplyFile):
     vs = networkGraph.vs
         
-    with open(QsupplyFile,'rb') as csvfileQs:
+    with open(QsupplyFile,'r') as csvfileQs:
         csvreaderQs=csv.reader(csvfileQs)
         mycsvQs=list(csvreaderQs)
         for i in range(1,len(mycsvQs)):
@@ -172,7 +172,7 @@ def getVoltageProfile(networkGraph, nodesOrder, VoltageFile):
     nodeNumber = len(nodesOrder)
     Vmag = numpy.zeros(nodeNumber)
     Vang = numpy.zeros(nodeNumber)
-    with open(VoltageFile,'rb') as csvfileVoltage:
+    with open(VoltageFile,'r') as csvfileVoltage:
         csvreaderVoltage=csv.reader(csvfileVoltage)
         mycsvVoltage=list(csvreaderVoltage)
         for i in range(3, len(mycsvVoltage)-1): # skip source bus, rg60, 650 for 13bus

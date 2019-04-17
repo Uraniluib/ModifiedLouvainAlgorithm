@@ -94,6 +94,6 @@ def cons(variables, networkGraph, oneCluster, genList, SVQ):
 
 def localControl(variables, networkGraph, oneCluster, genList, SVQ):
     process_id = os.getpid()
-    print ("Process ID: " + str(process_id))
+    print("Process ID: " + str(process_id))
     ControlResult = opt.minimize(objFun, variables, method = 'SLSQP', constraints = cons(variables, networkGraph, oneCluster, genList, SVQ))        
-    print ControlResult.x
+    print( ControlResult.x)
